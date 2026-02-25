@@ -71,7 +71,7 @@ export class EffectController {
 		const effect: Effect = {
 			execute: () => {
 				// Cleanup: 실행 전 기존의 모든 구독 관계를 끊음
-				effect.deps.forEach((subSet) => subSet.delete(effect));
+				effect.deps.forEach(subSet => subSet.delete(effect));
 				effect.deps.clear();
 
 				this.effectStack.push(effect);
@@ -116,7 +116,7 @@ export class EffectController {
 	/**
 	 * Asynchronously run pending effects.
 	 */
-	public async run(limit?: number) {
+	public async run(limit?: number): Promise<number> {
 		if (limit === undefined) {
 			limit = Infinity;
 		}
@@ -134,14 +134,15 @@ export class EffectController {
 			if (counter % this.runMicroBatchSize === 0) {
 				let elapsed = performance.now() - now;
 				if (elapsed >= this.macroBatchDuration) {
-					await new Promise<void>((resolve) => setTimeout(resolve, 0));
+					await new Promise<void>(resolve => setTimeout(resolve, 0));
 					now = performance.now();
 					macro++;
 				} else {
-					await new Promise<void>((resolve) => queueMicrotask(resolve));
+					await new Promise<void>(resolve => queueMicrotask(resolve));
 					micro++;
 				}
 			}
 		}
+		return counter;
 	}
 }
