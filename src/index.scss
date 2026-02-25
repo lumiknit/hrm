@@ -1,0 +1,18 @@
+$brown: #757763;
+
+// Path to Bulma's sass folder
+@use "bulma/sass" with (
+  $family-primary: '"Pretendard", sans-serif'
+);
+
+.toast-item {
+  color: rgb(var(--rgb-fg)) !important;
+  background-color: rgb(var(--rgb-bg)) !important;
+  overflow-wrap: break-word;
+
+  /* Fix Icons */
+  & > div > svg {
+    width: 1.25em;
+    height: 1.25em;
+  }
+}
