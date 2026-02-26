@@ -6,8 +6,9 @@
 		"url": "https://github.com/lumiknit"
 	},
 	"license": "MPL-2.0",
+	"homepage": "https://github.com/lumiknit/hrm",
 	"private": true,
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -19,6 +20,8 @@
 	"dependencies": {
 		"@codemirror/lang-javascript": "^6.2.4",
 		"@solid-primitives/media": "^2.3.5",
+		"@solidjs/router": "^0.15.4",
+		"@thisbeyond/solid-dnd": "^0.7.5",
 		"acorn": "^8.16.0",
 		"acorn-walk": "^8.3.5",
 		"astring": "^1.9.0",
@@ -29,7 +32,9 @@
 		"solid-icons": "^1.2.0",
 		"solid-js": "^1.9.10",
 		"solid-toast": "^0.5.0",
-		"thememirror": "^2.0.1"
+		"thememirror": "^2.0.1",
+		"yaml": "^2.8.2",
+		"zod": "^4.3.6"
 	},
 	"devDependencies": {
 		"@types/node": "^24.10.1",
