@@ -22,7 +22,7 @@ const SheetHead: Component<Props> = props => {
 	return (
 		<div {...props}>
 			<input
-				class="input is-large my-2"
+				class="input  has-text-weight-bold is-large my-2"
 				placeholder="Title"
 				value={sheetTitle()}
 				onChange={e => setSheetTitle(e.currentTarget.value)}

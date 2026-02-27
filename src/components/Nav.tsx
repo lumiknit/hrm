@@ -1,5 +1,5 @@
 import { createSignal, type Component } from "solid-js";
-import { TbOutlineInfoCircle } from "solid-icons/tb";
+import { TbOutlineHelp } from "solid-icons/tb";
 
 const Nav: Component = () => {
 	const [active, setActive] = createSignal(false);
@@ -34,7 +34,7 @@ const Nav: Component = () => {
 
 				<div class="navbar-end">
 					<a class="navbar-item" title="about" href="#/about">
-						<TbOutlineInfoCircle />
+						<TbOutlineHelp />
 					</a>
 				</div>
 			</div>

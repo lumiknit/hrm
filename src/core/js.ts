@@ -29,7 +29,7 @@ export const compileCode = (code: string, names: Set<string>) => {
 	simple(ast, {
 		Identifier(node) {
 			if (!names.has(node.name)) return;
-			node.name = `$.${node.name}()`;
+			node.name = `$.${node.name}($_)`;
 		},
 	});
 

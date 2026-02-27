@@ -14,6 +14,7 @@ import {
 import { uniqueID } from "../core/id";
 import toast from "solid-toast";
 import { validJSIdentifier } from "../core/js";
+import { runner } from "./runner";
 
 export type Cell = {
 	uid: string;
@@ -156,4 +157,26 @@ export const validCellUpdate = (
 		valid: errors.length === 0,
 		errors: errors.length > 0 ? errors : undefined,
 	};
+};
+
+export const updateCell = (uid: string, newData: FrozenCell) => {
+	const cell = cellMap.get(uid);
+	if (!cell) {
+		toast.error(`Cell with UID ${uid} not found.`);
+		return;
+	}
+
+	const oldData = cell.getData();
+	const validateResult = validCellUpdate(oldData, newData);
+	if (!validateResult.valid) {
+		toast.error(
+			`Invalid cell data: ` + (validateResult.errors ?? []).join(", "),
+		);
+		return;
+	}
+
+	cell.setData(newData);
+	toast.success("Updated cell: " + newData.id);
+
+	runner.recompile();
 };

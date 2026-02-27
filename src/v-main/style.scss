@@ -3,7 +3,6 @@
 }
 
 .sc-drag-container {
-	border: 1px solid var(--bulma-hr-background-color);
 	border-radius: 0.25rem;
 
 	display: flex;
@@ -14,7 +13,7 @@
 
 	position: relative;
 
-	background-color: var(--bulma-scheme-main);
+	background-color: var(--sc-cell-bg);
 }
 
 .sc-drag-handle {
@@ -24,7 +23,6 @@
 	-webkit-user-drag: none;
 
 	flex: 0;
-	border-right: 1px solid var(--bulma-hr-background-color);
 	padding: 0.5rem;
 
 	touch-action: none;
@@ -37,7 +35,32 @@
 	padding: 0.5rem;
 }
 
+.sc-v-hd {
+	position: relative;
+	& > span.icon {
+		position: absolute;
+		top: 0;
+		right: 0;
+		pointer-events: none;
+	}
+}
+
 .sc-v-formula {
 	min-width: 10rem;
 	cursor: pointer;
+	flex: 1;
+}
+
+.sheet-toolbar {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.25rem;
+
+	border-radius: 0.25rem;
+	background: var(--bulma-body-background-color);
 }

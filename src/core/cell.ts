@@ -4,7 +4,6 @@ import { uniqueID } from "./id";
 export const cellColorSchema = z.enum([
 	"none",
 	"primary",
-	"secondary",
 	"danger",
 	"warning",
 	"success",

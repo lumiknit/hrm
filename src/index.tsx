@@ -9,8 +9,11 @@ import "./index.scss";
 import MainView from "./v-main/View";
 import Nav from "./components/Nav";
 import AboutView from "./v-other/AboutView";
+import { putBuiltins } from "./core/builtin";
 
 const root = document.getElementById("root");
+
+putBuiltins(window);
 
 const Layout: Component<RouteSectionProps> = props => {
 	return (

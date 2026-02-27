@@ -74,15 +74,6 @@ const SheetCellList: Component<SheetCellListProps> = props => {
 							{(uid, idx) => (
 								<>
 									<SortableCellHolder uid={uid} onDelete={() => {}} />
-									<div class="is-flex is-align-items-center is-justify-content-center mb-2">
-										<button
-											class="button is-rounded is-small"
-											onClick={() => addEmptyCell(1 + idx())}>
-											<span class="icon is-small">
-												<TbOutlinePlus />
-											</span>
-										</button>
-									</div>
 								</>
 							)}
 						</For>

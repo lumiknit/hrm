@@ -1,5 +1,5 @@
 import { createSignal, For, type Component } from "solid-js";
-import { validCellUpdate, type Cell } from "./state";
+import { updateCell, validCellUpdate, type Cell } from "./state";
 import {
 	TbOutlineCancel,
 	TbOutlineCheck,
@@ -28,7 +28,6 @@ const SCEdit: Component<Props> = props => {
 	let formulaRef!: HTMLTextAreaElement;
 
 	const handleSave = () => {
-		const old = data();
 		const newData: FrozenCell = {
 			id: idRef.value.trim(),
 			formula: formulaRef.value,
@@ -37,16 +36,8 @@ const SCEdit: Component<Props> = props => {
 				color: selectedColor() !== "none" ? selectedColor() : undefined,
 			},
 		};
-		const validateResult = validCellUpdate(old, newData);
-		if (!validateResult.valid) {
-			toast.error(
-				"Invalid cell data: " + (validateResult.errors ?? []).join(", "),
-			);
-			return;
-		}
-		props.cell.setData(newData);
+		updateCell(props.cell.uid, newData);
 		props.onEditEnd();
-		toast.success("Saved cell: " + idRef.value);
 	};
 
 	return (
@@ -70,7 +61,7 @@ const SCEdit: Component<Props> = props => {
 			<div>
 				<input
 					ref={idRef}
-					class="input"
+					class="input is-family-monospace"
 					placeholder="Identifier"
 					value={data().id}
 				/>
@@ -78,7 +69,7 @@ const SCEdit: Component<Props> = props => {
 			<div>
 				<textarea
 					ref={formulaRef}
-					class="textarea"
+					class="textarea is-family-monospace"
 					placeholder="Formula (JS)"
 					value={data().formula}
 				/>
