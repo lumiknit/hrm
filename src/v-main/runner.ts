@@ -1,8 +1,16 @@
-import { createSignal, untrack, type Accessor, type Setter } from "solid-js";
+import {
+	createSignal,
+	untrack,
+	type Accessor,
+	type Setter,
+	type Signal,
+} from "solid-js";
 import { EffectController } from "../core/effect";
 import * as Effect from "../core/effect";
-import { cellMap, cells } from "./state";
+import { cellMap } from "./state";
 import { compileCode } from "../core/js";
+
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 
 type CellInternal = {
 	id: string;
@@ -75,26 +83,35 @@ class Runner {
 		const getters: Record<string, Effect.Getter<any>> = {};
 		const setters: Record<string, Effect.Setter<any>> = {};
 		for (const [, i] of items) {
-			i.compiled = compileCode(i.code, nameSet);
-			i.effectFn = new Function(
-				"$", // Getter objects
-				"$_", // Current effect scope
-				i.compiled,
-			);
-			const [get, set] = newCtrl.sig(i.initValue);
+			let initValue = i.initValue;
+			try {
+				i.compiled = compileCode(i.code, nameSet);
+				i.effectFn = new AsyncFunction(
+					"$", // Getter objects
+					"$_", // Current effect scope
+					i.compiled,
+				);
+			} catch (e) {
+				console.error(`Error compiling cell ${i.id}:`, e);
+				i.effectFn = () => {
+					return e;
+				};
+				initValue = e;
+			}
+			const [get, set] = newCtrl.sig(initValue);
 			getters[i.id] = get;
 			setters[i.id] = set;
 		}
 
 		// Start effects
 		for (const [, i] of items) {
-			newCtrl.eff(ctx => {
+			newCtrl.eff(async ctx => {
 				try {
-					const result = i.effectFn(getters, ctx);
+					const result = await i.effectFn(getters, ctx);
 					setters[i.id](result);
 				} catch (e) {
 					console.error(`Error in cell ${i.id}:`, e);
-					setters[i.id](undefined);
+					setters[i.id](e);
 				}
 			});
 

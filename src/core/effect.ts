@@ -16,7 +16,7 @@ export type Setter<T> = (value: T) => void;
 export type Signal<T> = [Getter<T>, Setter<T>];
 
 export type Effect = {
-	execute: () => void;
+	execute: () => void | Promise<void>;
 	deps: Set<Set<Effect>>;
 };
 
@@ -65,16 +65,13 @@ export class EffectController {
 	 * Create a reactive effect that runs the provided function.
 	 * @param fn The function to run as an effect.
 	 */
-	public eff(fn: (ctx: Effect) => void) {
+	public eff(fn: (ctx: Effect) => void | Promise<void>) {
 		const effect: Effect = {
 			execute: () => {
 				// Cleanup: 실행 전 기존의 모든 구독 관계를 끊음
 				effect.deps.forEach(subSet => subSet.delete(effect));
 				effect.deps.clear();
-
-				try {
-					fn(effect);
-				} catch {}
+				return fn(effect);
 			},
 			deps: new Set(),
 		};
@@ -85,11 +82,15 @@ export class EffectController {
 	/**
 	 * Run single pending effect.
 	 */
-	public runOne(): boolean {
+	public async runOne(): Promise<boolean> {
 		const effect = this.pendingEffects.values().next().value;
 		if (effect) {
 			this.pendingEffects.delete(effect);
-			effect.execute();
+			try {
+				await effect.execute();
+			} catch (e) {
+				console.error("Error in effect:", e);
+			}
 			return true;
 		}
 		return false;
@@ -109,7 +110,7 @@ export class EffectController {
 		let macro = 0;
 
 		while (counter < limit) {
-			if (!this.runOne()) {
+			if (!(await this.runOne())) {
 				break;
 			}
 			counter++;

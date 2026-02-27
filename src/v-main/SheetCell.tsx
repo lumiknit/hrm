@@ -5,7 +5,6 @@ import SCEdit from "./SCEdit";
 
 type SheetCellProps = {
 	uid: string;
-	onDelete: () => void;
 };
 
 const SheetCell: Component<SheetCellProps> = props => {
@@ -21,16 +20,13 @@ const SheetCell: Component<SheetCellProps> = props => {
 				<Match when={!editing()}>
 					<SCView
 						cell={cell}
-						onEditStart={() => setEditing(true)}
-						onDelete={props.onDelete}
+						onEditStart={() => {
+							setEditing(true);
+						}}
 					/>
 				</Match>
 				<Match when={editing()}>
-					<SCEdit
-						cell={cell}
-						onEditEnd={() => setEditing(false)}
-						onDelete={props.onDelete}
-					/>
+					<SCEdit cell={cell} onEditEnd={() => setEditing(false)} />
 				</Match>
 			</Switch>
 		</div>

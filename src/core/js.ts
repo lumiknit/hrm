@@ -22,6 +22,7 @@ export const compileCode = (code: string, names: Set<string>) => {
 		ecmaVersion: "latest",
 		sourceType: "script",
 		allowReturnOutsideFunction: true,
+		allowAwaitOutsideFunction: true,
 	});
 	console.log(ast);
 
@@ -44,5 +45,7 @@ export const compileCode = (code: string, names: Set<string>) => {
 		}
 	}
 
-	return generate(ast);
+	const generated = generate(ast);
+	console.log(generated);
+	return generated;
 };

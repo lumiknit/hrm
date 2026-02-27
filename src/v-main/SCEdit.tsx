@@ -1,20 +1,60 @@
-import { createSignal, For, type Component } from "solid-js";
-import { updateCell, validCellUpdate, type Cell } from "./state";
+import { createSignal, For, Show, type Component } from "solid-js";
+import { deleteCell, updateCell, type Cell } from "./state";
 import {
 	TbOutlineCancel,
 	TbOutlineCheck,
 	TbOutlineTrash,
 } from "solid-icons/tb";
-import toast from "solid-toast";
 import { cellColorSchema, type CellColor, type FrozenCell } from "../core/cell";
+import CodeEdit from "../components/code/CodeEdit";
+
+type ColorSelectProps = {
+	color: CellColor;
+	onChange: (color: CellColor) => void;
+};
+
+const ColorSelect: Component<ColorSelectProps> = props => {
+	return (
+		<div class="field is-horizontal">
+			<div class="field-label is-normal">
+				<label class="label">Color</label>
+			</div>
+			<div class="field-body">
+				<div class="field">
+					<div class="control">
+						<div
+							class={
+								"select is-fullwidth " +
+								(props.color !== "none" ? `is-${props.color}` : "")
+							}>
+							<select
+								onChange={e =>
+									props.onChange(e.currentTarget.value as CellColor)
+								}>
+								<For each={cellColorSchema.options}>
+									{c => (
+										<option value={c} selected={props.color === c}>
+											{c}
+										</option>
+									)}
+								</For>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
 
 type Props = {
 	cell: Cell;
 
 	onEditEnd: () => void;
-	onDelete: () => void;
 };
 const SCEdit: Component<Props> = props => {
+	const codeGetBox: [(() => string)?] = [];
+	const [showOptions, setShowOptions] = createSignal(false);
 	const data = () => props.cell.getData();
 
 	const [selectedColor, setSelectedColor] = createSignal<CellColor>(
@@ -25,12 +65,11 @@ const SCEdit: Component<Props> = props => {
 	);
 
 	let idRef!: HTMLInputElement;
-	let formulaRef!: HTMLTextAreaElement;
 
 	const handleSave = () => {
 		const newData: FrozenCell = {
 			id: idRef.value.trim(),
-			formula: formulaRef.value,
+			formula: codeGetBox[0] ? codeGetBox[0]() : data().formula,
 			meta: {
 				type: { type: "code" },
 				color: selectedColor() !== "none" ? selectedColor() : undefined,
@@ -42,22 +81,6 @@ const SCEdit: Component<Props> = props => {
 
 	return (
 		<>
-			<div
-				class={
-					"select " +
-					(selectedColor() !== "none" ? `is-${selectedColor()}` : "")
-				}>
-				<select
-					onChange={e => setSelectedColor(e.currentTarget.value as CellColor)}>
-					<For each={cellColorSchema.options}>
-						{color => (
-							<option value={color} selected={selectedColor() === color}>
-								{color}
-							</option>
-						)}
-					</For>
-				</select>
-			</div>
 			<div>
 				<input
 					ref={idRef}
@@ -67,34 +90,55 @@ const SCEdit: Component<Props> = props => {
 				/>
 			</div>
 			<div>
-				<textarea
-					ref={formulaRef}
-					class="textarea is-family-monospace"
-					placeholder="Formula (JS)"
-					value={data().formula}
+				<CodeEdit
+					class="sc-code my-2"
+					codeGetBox={codeGetBox}
+					language={"javascript"}
+					initText={data().formula}
 				/>
 			</div>
+
 			<div>
-				<button class="button is-small is-primary" onClick={handleSave}>
-					<span class="icon">
-						<TbOutlineCheck />
-					</span>
-					<span>Save</span>
-				</button>
-				<button
-					class="button is-small is-danger"
-					onClick={() => props.onDelete()}>
-					<span class="icon">
-						<TbOutlineTrash />
-					</span>
-					<span>Delete</span>
-				</button>
-				<button class="button is-small" onClick={() => props.onEditEnd()}>
-					<span class="icon">
-						<TbOutlineCancel />
-					</span>
-					<span>Cancel</span>
-				</button>
+				<div
+					class="has-text-centered is-size-6 show-option-toggle"
+					onClick={() => setShowOptions(s => !s)}>
+					- Show Options -
+				</div>
+				<Show when={showOptions()}>
+					<ColorSelect
+						color={selectedColor()}
+						onChange={c => setSelectedColor(c)}
+					/>
+				</Show>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-small is-primary" onClick={handleSave}>
+						<span class="icon">
+							<TbOutlineCheck />
+						</span>
+						<span>Save</span>
+					</button>
+				</p>
+				<p class="control">
+					<button
+						class="button is-small is-danger"
+						onClick={() => deleteCell(props.cell.uid)}>
+						<span class="icon">
+							<TbOutlineTrash />
+						</span>
+						<span>Delete</span>
+					</button>
+				</p>
+				<p class="control">
+					<button class="button is-small" onClick={() => props.onEditEnd()}>
+						<span class="icon">
+							<TbOutlineCancel />
+						</span>
+						<span>Cancel</span>
+					</button>
+				</p>
 			</div>
 		</>
 	);

@@ -10,7 +10,6 @@ import {
 import { For, Show, type Component } from "solid-js";
 import { addEmptyCell, cells, getCell, reorderCell } from "./state";
 import SheetCell from "./SheetCell";
-import { TbOutlinePlus } from "solid-icons/tb";
 
 type SheetCellListProps = {};
 
@@ -44,7 +43,7 @@ const SortableCellHolder: Component<SortableCellProps> = props => {
 				⠿
 			</div>
 			<div class="sc-drag-content">
-				<SheetCell uid={props.uid} onDelete={props.onDelete} />
+				<SheetCell uid={props.uid} />
 			</div>
 		</div>
 	);

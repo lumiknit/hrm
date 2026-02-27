@@ -10,23 +10,24 @@ import { defaultDark, defaultLight } from "./cm_thm_default";
 
 import { javascript } from "@codemirror/lang-javascript";
 
-export interface TextEditProps extends Omit<
+export interface Props extends Omit<
 	JSX.HTMLAttributes<HTMLDivElement>,
 	"onChange"
 > {
 	language?: string;
 	initText?: string;
 	disabled?: boolean;
-	onChange?: (value: string) => void;
+
+	codeGetBox: [(() => string)?];
 }
 
-export const TextEdit: Component<TextEditProps> = props => {
+const CodeEdit: Component<Props> = props => {
 	const [local, rest] = splitProps(props, [
 		"language",
 		"initText",
 		"disabled",
-		"onChange",
 		"class",
+		"codeGetBox",
 	]);
 	let containerRef!: HTMLDivElement;
 	let editorView: EditorView | null = null;
@@ -44,8 +45,7 @@ export const TextEdit: Component<TextEditProps> = props => {
 	createEffect(() => updateThemeExt(getThemeExt()));
 
 	// Create a stable reference to onChange to avoid reconfiguring listeners
-	const latestOnChange = () => local.onChange;
-
+	const langCompartment = new Compartment();
 	const getLangExtension = (lang?: string) => {
 		switch (lang?.toLowerCase()) {
 			case "javascript":
@@ -59,29 +59,25 @@ export const TextEdit: Component<TextEditProps> = props => {
 		}
 	};
 
+	const Theme = EditorView.theme({
+		"&": {
+			fontSize: "1rem",
+		},
+		".cm-content": {
+			fontFamily: "var(--cm-monospace)",
+		},
+	});
+
 	onMount(() => {
 		// Basic setup extensions needed for a standard editor feel
 		const extensions = [
 			lineNumbers(),
 			history(),
 			keymap.of([...defaultKeymap, ...historyKeymap]),
-			EditorView.updateListener.of(update => {
-				// We don't want to fire onChange on every keystroke as per requirements,
-				// but we could track internal state here if needed.
-			}),
-			EditorView.domEventHandlers({
-				blur: (e, view) => {
-					// Fire onChange when the editor loses focus
-					const currentDoc = view.state.doc.toString();
-					const onChange = latestOnChange();
-					if (onChange) {
-						onChange(currentDoc);
-					}
-				},
-			}),
-			getLangExtension(local.language),
 			EditorState.readOnly.of(!!local.disabled),
 			themeCompartment.of(getThemeExt()),
+			langCompartment.of(getLangExtension(local.language)),
+			Theme,
 		];
 
 		const state = EditorState.create({
@@ -93,15 +89,14 @@ export const TextEdit: Component<TextEditProps> = props => {
 			state,
 			parent: containerRef,
 		});
+
+		props.codeGetBox[0] = () => editorView?.state.doc.toString() || "";
 	});
 
 	// Reactively update language if it changes
 	createEffect(() => {
 		if (editorView && local.language) {
-			// This is a simplified way to replace the language extension.
-			// In a robust implementation, we'd use a Compartment for the language extension.
-			// But for now, we trust the component will unmount/remount on major state shifts
-			// or we accept Language is mostly static after mount.
+			updateCompartment(langCompartment)(getLangExtension(local.language));
 		}
 	});
 
@@ -119,3 +114,5 @@ export const TextEdit: Component<TextEditProps> = props => {
 		/>
 	);
 };
+
+export default CodeEdit;

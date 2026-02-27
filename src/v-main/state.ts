@@ -180,3 +180,26 @@ export const updateCell = (uid: string, newData: FrozenCell) => {
 
 	runner.recompile();
 };
+
+export const deleteCell = (uid: string) => {
+	const cell = cellMap.get(uid);
+	if (!cell) {
+		toast.error(`Cell with UID ${uid} not found.`);
+		return;
+	}
+	if (
+		!confirm(
+			"Are you sure you want to delete cell " +
+				untrack(() => cell.getData()).id +
+				"?",
+		)
+	) {
+		return;
+	}
+
+	cellMap.delete(uid);
+	setCells(prev => prev.filter(id => id !== uid));
+	toast.success("Deleted cell: " + untrack(() => cell.getData()).id);
+
+	runner.recompile();
+};
