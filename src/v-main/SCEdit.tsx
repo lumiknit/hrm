@@ -1,8 +1,10 @@
 import { createSignal, For, Show, type Component } from "solid-js";
 import { deleteCell, updateCell, type Cell } from "./state";
 import {
+	TbFillKey,
 	TbOutlineCancel,
 	TbOutlineCheck,
+	TbOutlineKey,
 	TbOutlineTrash,
 } from "solid-icons/tb";
 import {
@@ -129,13 +131,16 @@ const SCEdit: Component<Props> = props => {
 
 	return (
 		<>
-			<div>
+			<div class="control has-icons-left">
 				<input
 					ref={idRef}
 					class="input is-family-monospace"
 					placeholder="Identifier"
 					value={data().id}
 				/>
+				<span class="icon is-left">
+					<TbOutlineKey />
+				</span>
 			</div>
 			<div>
 				<CodeEdit
