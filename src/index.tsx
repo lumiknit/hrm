@@ -10,6 +10,7 @@ import MainView from "./v-main/View";
 import Nav from "./components/Nav";
 import AboutView from "./v-other/AboutView";
 import { putBuiltins } from "./core/builtin";
+import { ModalStack } from "./modal/ModalStack";
 
 const root = document.getElementById("root");
 
@@ -19,6 +20,7 @@ const Layout: Component<RouteSectionProps> = props => {
 	return (
 		<>
 			<Toaster />
+			<ModalStack />
 			<Nav />
 			{props.children}
 		</>

@@ -2,13 +2,19 @@ import {
 	TbFillFile,
 	TbFillSquare,
 	TbOutlineCheckbox,
+	TbOutlineDeviceFloppy,
+	TbOutlineFolder,
 	TbOutlineHelpCircle,
 	TbOutlinePlus,
 	TbOutlineProgress,
 } from "solid-icons/tb";
 import { Switch, Match, type Component, createSignal } from "solid-js";
 import { runner } from "./runner";
-import { addEmptyCell } from "./state";
+import { addEmptyCell, saveCurrentSheet, sheetDirty } from "./state";
+import { showOpenSheetModal } from "./ModalOpenSheet";
+import { showImportSheetModal } from "./ModalImportSheet";
+import { showExportSheetModal } from "./ModalExportSheet";
+import { actionNewSheet, actionSaveSheet } from "./state-action";
 
 const RunningIndicator: Component = () => {
 	const paused = () => runner.paused();
@@ -55,32 +61,79 @@ const FileDropdown: Component = () => {
 					onClick={toggleActive}
 					title="File Menu">
 					<span class="icon">
-						<TbFillFile />
+						<TbOutlineFolder />
 					</span>
 				</button>
 			</div>
 			<div class="dropdown-menu" id="dropdown-menu" role="menu">
 				<div class="dropdown-content">
-					<a href="#" class="dropdown-item">
+					<a
+						href="#"
+						class="dropdown-item"
+						onClick={() => {
+							setActive(false);
+							actionNewSheet();
+						}}>
 						New Sheet
 					</a>
-					<a href="#" class="dropdown-item">
+					<a
+						href="#"
+						class="dropdown-item"
+						onClick={() => {
+							setActive(false);
+							actionSaveSheet();
+						}}>
 						Save Sheet
 					</a>
 					<hr class="dropdown-divider" />
-					<a href="#" class="dropdown-item">
+					<a
+						href="#"
+						class="dropdown-item"
+						onClick={() => {
+							setActive(false);
+							showOpenSheetModal();
+						}}>
 						Open Sheet
 					</a>
 					<hr class="dropdown-divider" />
-					<a href="#" class="dropdown-item">
+					<a
+						href="#"
+						class="dropdown-item"
+						onClick={() => {
+							setActive(false);
+							showImportSheetModal();
+						}}>
 						Import Sheet
 					</a>
-					<a href="#" class="dropdown-item">
+					<a
+						href="#"
+						class="dropdown-item"
+						onClick={() => {
+							setActive(false);
+							showExportSheetModal();
+						}}>
 						Export Sheet
 					</a>
 				</div>
 			</div>
 		</div>
+	);
+};
+
+const SaveButton: Component = () => {
+	const cls = () => {
+		return "button is-small " + (sheetDirty() ? "is-warning" : "is-disabled");
+	};
+	const handleClick = () => {
+		actionSaveSheet();
+	};
+
+	return (
+		<button class={cls()} onClick={handleClick} title="Save Sheet">
+			<span class="icon">
+				<TbOutlineDeviceFloppy />
+			</span>
+		</button>
 	);
 };
 
@@ -92,6 +145,7 @@ const Toolbar: Component = () => {
 			<span class="mx-1" />
 
 			<FileDropdown />
+			<SaveButton />
 
 			<span class="mx-1" />
 

@@ -15,6 +15,7 @@ import { uniqueID } from "../core/id";
 import toast from "solid-toast";
 import { validJSIdentifier } from "../core/js";
 import { runner } from "./runner";
+import { SheetDB } from "../core/cell-idb";
 
 export type Cell = {
 	uid: string;
@@ -44,8 +45,10 @@ export const freezeCell = (cell: Cell): FrozenCell => {
 	return cell.getData();
 };
 
+export const [sheetID, setSheetID] = createSignal<string>(uniqueID());
 export const [sheetTitle, setSheetTitle] = createSignal<string>("");
 export const [sheetDesc, setSheetDesc] = createSignal<string>("");
+export const [sheetDirty, setSheetDirty] = createSignal<boolean>(false);
 
 /**
  * cells only contains the list of cells in the current sheet
@@ -59,6 +62,7 @@ export const getCell = (uid: string): Cell | undefined => cellMap.get(uid);
 
 export const reset = () => {
 	batch(() => {
+		setSheetID(uniqueID());
 		setSheetTitle("");
 		setSheetDesc("");
 		setCells([]);
@@ -66,9 +70,10 @@ export const reset = () => {
 	});
 };
 
-export const loadSheet = (sh: Sheet) => {
+export const loadSheet = (sh: Sheet, id?: string) => {
 	reset();
 	batch(() => {
+		setSheetID(id ?? uniqueID());
 		setSheetTitle(sh.title);
 		setSheetDesc(sh.description);
 		const newUIDs = [];
@@ -79,6 +84,28 @@ export const loadSheet = (sh: Sheet) => {
 		}
 		setCells(newUIDs);
 	});
+};
+
+export const freezeCurrentSheet = (): Sheet => {
+	return untrack(() => ({
+		updatedAt: new Date(),
+		title: sheetTitle(),
+		description: sheetDesc(),
+		cells: cells().map(uid => {
+			const cell = cellMap.get(uid);
+			if (!cell) {
+				throw new Error(`Cell with UID ${uid} not found in cellMap.`);
+			}
+			return freezeCell(cell);
+		}),
+	}));
+};
+
+export const saveCurrentSheet = async () => {
+	const db = new SheetDB();
+	const sheet = freezeCurrentSheet();
+	await db.set(sheetID(), sheet);
+	setSheetDirty(false);
 };
 
 const findNewCellName = () => {
@@ -92,33 +119,6 @@ const findNewCellName = () => {
 			return name;
 		}
 	}
-};
-
-export const addEmptyCell = (idx?: number) => {
-	const newCell = thawCell(defaultFrozenCell(findNewCellName()));
-	cellMap.set(newCell.uid, newCell);
-	setCells(prev => {
-		const copy = [...prev];
-		if (idx !== undefined) {
-			copy.splice(idx, 0, newCell.uid);
-		} else {
-			copy.push(newCell.uid);
-		}
-		return copy;
-	});
-	toast.success("Added cell: " + untrack(() => newCell.getData()).id);
-};
-
-export const reorderCell = (fromIndex: number, toIndex: number) => {
-	const currentCells = cells();
-	setCells(oldCells => {
-		const cellID = oldCells[fromIndex];
-		if (!cellID) return oldCells; // Invalid index, return unchanged
-		const newCells = [...currentCells];
-		newCells.splice(fromIndex, 1);
-		newCells.splice(toIndex, 0, cellID);
-		return newCells;
-	});
 };
 
 /**
@@ -159,6 +159,35 @@ export const validCellUpdate = (
 	};
 };
 
+export const addEmptyCell = (idx?: number) => {
+	const newCell = thawCell(defaultFrozenCell(findNewCellName()));
+	cellMap.set(newCell.uid, newCell);
+	setCells(prev => {
+		const copy = [...prev];
+		if (idx !== undefined) {
+			copy.splice(idx, 0, newCell.uid);
+		} else {
+			copy.push(newCell.uid);
+		}
+		return copy;
+	});
+	setSheetDirty(true);
+	toast.success("Added cell: " + untrack(() => newCell.getData()).id);
+};
+
+export const reorderCell = (fromIndex: number, toIndex: number) => {
+	const currentCells = cells();
+	setCells(oldCells => {
+		const cellID = oldCells[fromIndex];
+		if (!cellID) return oldCells; // Invalid index, return unchanged
+		const newCells = [...currentCells];
+		newCells.splice(fromIndex, 1);
+		newCells.splice(toIndex, 0, cellID);
+		return newCells;
+	});
+	setSheetDirty(true);
+};
+
 export const updateCell = (uid: string, newData: FrozenCell) => {
 	const cell = cellMap.get(uid);
 	if (!cell) {
@@ -176,6 +205,7 @@ export const updateCell = (uid: string, newData: FrozenCell) => {
 	}
 
 	cell.setData(newData);
+	setSheetDirty(true);
 	toast.success("Updated cell: " + newData.id);
 
 	runner.recompile();
@@ -199,7 +229,12 @@ export const deleteCell = (uid: string) => {
 
 	cellMap.delete(uid);
 	setCells(prev => prev.filter(id => id !== uid));
+	setSheetDirty(true);
 	toast.success("Deleted cell: " + untrack(() => cell.getData()).id);
 
 	runner.recompile();
+};
+
+export const checkSheetDirty = (): boolean => {
+	return untrack(sheetDirty);
 };
