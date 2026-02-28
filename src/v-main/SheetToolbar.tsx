@@ -1,5 +1,4 @@
 import {
-	TbFillFile,
 	TbFillSquare,
 	TbOutlineCheckbox,
 	TbOutlineDeviceFloppy,
@@ -10,7 +9,7 @@ import {
 } from "solid-icons/tb";
 import { Switch, Match, type Component, createSignal } from "solid-js";
 import { runner } from "./runner";
-import { addEmptyCell, saveCurrentSheet, sheetDirty } from "./state";
+import { addEmptyCell, sheetDirty } from "./state";
 import { showOpenSheetModal } from "./ModalOpenSheet";
 import { showImportSheetModal } from "./ModalImportSheet";
 import { showExportSheetModal } from "./ModalExportSheet";

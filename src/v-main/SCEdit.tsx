@@ -1,7 +1,6 @@
 import { createSignal, For, Show, type Component } from "solid-js";
 import { deleteCell, updateCell, type Cell } from "./state";
 import {
-	TbFillKey,
 	TbOutlineCancel,
 	TbOutlineCheck,
 	TbOutlineKey,
