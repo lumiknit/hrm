@@ -1,4 +1,4 @@
-import { For, Match, Switch, type Component } from "solid-js";
+import { type Component } from "solid-js";
 import SheetHead from "./SheetHead";
 import SheetCellList from "./SheetCellList";
 
@@ -7,7 +7,7 @@ import SheetToolbar from "./SheetToolbar";
 
 const View: Component = () => {
 	return (
-		<main class="container">
+		<main class="container p-1 ">
 			<SheetToolbar />
 			<SheetHead class="my-2" />
 			<hr />

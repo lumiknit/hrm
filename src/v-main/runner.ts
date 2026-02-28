@@ -1,10 +1,4 @@
-import {
-	createSignal,
-	untrack,
-	type Accessor,
-	type Setter,
-	type Signal,
-} from "solid-js";
+import { createSignal, untrack, type Accessor, type Setter } from "solid-js";
 import { EffectController } from "../core/effect";
 import * as Effect from "../core/effect";
 import { cellMap } from "./state";

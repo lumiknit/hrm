@@ -5,7 +5,13 @@ import {
 	TbOutlineCheck,
 	TbOutlineTrash,
 } from "solid-icons/tb";
-import { cellColorSchema, type CellColor, type FrozenCell } from "../core/cell";
+import {
+	cellColorSchema,
+	cellDisplayMode,
+	type CellColor,
+	type CellDisplayMode,
+	type FrozenCell,
+} from "../core/cell";
 import CodeEdit from "../components/code/CodeEdit";
 
 type ColorSelectProps = {
@@ -47,6 +53,41 @@ const ColorSelect: Component<ColorSelectProps> = props => {
 	);
 };
 
+type DisplayModeSelectProps = {
+	displayMode: CellDisplayMode;
+	onChange: (displayMode: CellDisplayMode) => void;
+};
+
+const DisplayModeSelect: Component<DisplayModeSelectProps> = props => {
+	return (
+		<div class="field is-horizontal">
+			<div class="field-label is-normal">
+				<label class="label">Display</label>
+			</div>
+			<div class="field-body">
+				<div class="field">
+					<div class="control">
+						<div class="select">
+							<select
+								onChange={e =>
+									props.onChange(e.currentTarget.value as CellDisplayMode)
+								}>
+								<For each={cellDisplayMode.options}>
+									{c => (
+										<option value={c} selected={props.displayMode === c}>
+											{c}
+										</option>
+									)}
+								</For>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
+
 type Props = {
 	cell: Cell;
 
@@ -63,6 +104,13 @@ const SCEdit: Component<Props> = props => {
 			return c.success ? c.data : "none";
 		})(),
 	);
+	const [selectedDisplayMode, setSelectedDisplayMode] =
+		createSignal<CellDisplayMode>(
+			(() => {
+				const dm = cellDisplayMode.safeParse(data().meta.displayMode);
+				return dm.success ? dm.data : "default";
+			})(),
+		);
 
 	let idRef!: HTMLInputElement;
 
@@ -98,30 +146,26 @@ const SCEdit: Component<Props> = props => {
 				/>
 			</div>
 
-			<div>
+			<div class="my-1">
 				<div
-					class="has-text-centered is-size-6 show-option-toggle"
+					class="has-text-centered is-size-6 show-option-toggle cursor-pointer"
 					onClick={() => setShowOptions(s => !s)}>
-					- Show Options -
+					- More Options -
 				</div>
 				<Show when={showOptions()}>
 					<ColorSelect
 						color={selectedColor()}
 						onChange={c => setSelectedColor(c)}
 					/>
+					<DisplayModeSelect
+						displayMode={selectedDisplayMode()}
+						onChange={dm => setSelectedDisplayMode(dm)}
+					/>
 				</Show>
 			</div>
 
-			<div class="field is-grouped">
-				<p class="control">
-					<button class="button is-small is-primary" onClick={handleSave}>
-						<span class="icon">
-							<TbOutlineCheck />
-						</span>
-						<span>Save</span>
-					</button>
-				</p>
-				<p class="control">
+			<div class="field is-flex is-justify-content-space-between">
+				<div>
 					<button
 						class="button is-small is-danger"
 						onClick={() => deleteCell(props.cell.uid)}>
@@ -130,15 +174,21 @@ const SCEdit: Component<Props> = props => {
 						</span>
 						<span>Delete</span>
 					</button>
-				</p>
-				<p class="control">
+				</div>
+				<div class="is-flex is-gap-1 is-align-items-stretch">
 					<button class="button is-small" onClick={() => props.onEditEnd()}>
 						<span class="icon">
 							<TbOutlineCancel />
 						</span>
 						<span>Cancel</span>
 					</button>
-				</p>
+					<button class="button is-small is-primary" onClick={handleSave}>
+						<span class="icon">
+							<TbOutlineCheck />
+						</span>
+						<span>Save</span>
+					</button>
+				</div>
 			</div>
 		</>
 	);

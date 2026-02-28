@@ -1,13 +1,10 @@
 import {
 	TbFillFile,
-	TbFillHelpCircle,
 	TbFillSquare,
 	TbOutlineCheckbox,
-	TbOutlineFileDislike,
 	TbOutlineHelpCircle,
 	TbOutlinePlus,
 	TbOutlineProgress,
-	TbOutlineSelect,
 } from "solid-icons/tb";
 import { Switch, Match, type Component, createSignal } from "solid-js";
 import { runner } from "./runner";
@@ -89,7 +86,7 @@ const FileDropdown: Component = () => {
 
 const Toolbar: Component = () => {
 	return (
-		<div class="sheet-toolbar has-shadow p-2">
+		<div class="sheet-toolbar has-shadow m-1 p-2">
 			<RunningIndicator />
 
 			<span class="mx-1" />

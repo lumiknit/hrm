@@ -1,4 +1,4 @@
-import { createSignal, Match, Show, Switch, type Component } from "solid-js";
+import { createSignal, Match, Switch, type Component } from "solid-js";
 import { getCell } from "./state";
 import SCView from "./SCView";
 import SCEdit from "./SCEdit";

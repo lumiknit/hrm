@@ -49,7 +49,7 @@ const SortableCellHolder: Component<SortableCellProps> = props => {
 	);
 };
 
-const SheetCellList: Component<SheetCellListProps> = props => {
+const SheetCellList: Component<SheetCellListProps> = () => {
 	const handleDragEnd = (event: DragEvent) => {
 		if (event.draggable && event.droppable) {
 			const i = cells();
@@ -70,7 +70,7 @@ const SheetCellList: Component<SheetCellListProps> = props => {
 				<SortableProvider ids={cells()}>
 					<div class="sheet-cell-list">
 						<For each={cells()}>
-							{(uid, idx) => (
+							{uid => (
 								<>
 									<SortableCellHolder uid={uid} onDelete={() => {}} />
 								</>

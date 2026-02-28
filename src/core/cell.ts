@@ -11,6 +11,15 @@ export const cellColorSchema = z.enum([
 ]);
 export type CellColor = z.infer<typeof cellColorSchema>;
 
+export const cellDisplayMode = z.enum([
+	"default",
+	"json",
+	"yaml",
+	"markdown",
+	"html",
+]);
+export type CellDisplayMode = z.infer<typeof cellDisplayMode>;
+
 /** JS Code Cell Type */
 const cellTypeCodeSchema = z.object({
 	type: z.literal("code"), // Type of the cell, currently only "code" is supported.
@@ -35,9 +44,9 @@ export type CellType = z.infer<typeof cellTypeSchema>;
 
 export const cellMetaSchema = z.object({
 	type: cellTypeSchema,
-	help: z.string().optional(), // Help text or documentation for the cell. markdown.
-	hide: z.boolean().optional(), // Whether to hide the cell from the UI.
 	color: cellColorSchema.optional(), // Color for the cell, used for UI styling.
+	displayMode: cellDisplayMode.optional(),
+	help: z.string().optional(), // Help text or documentation for the cell. markdown.
 });
 export type CellMeta = z.infer<typeof cellMetaSchema>;
 
