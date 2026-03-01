@@ -11,14 +11,15 @@ export const cellColorSchema = z.enum([
 ]);
 export type CellColor = z.infer<typeof cellColorSchema>;
 
-export const cellDisplayMode = z.enum([
+export const cellDisplayModeSchema = z.enum([
 	"default",
 	"json",
 	"yaml",
+	"toml",
 	"markdown",
 	"html",
 ]);
-export type CellDisplayMode = z.infer<typeof cellDisplayMode>;
+export type CellDisplayMode = z.infer<typeof cellDisplayModeSchema>;
 
 /** JS Code Cell Type */
 const cellTypeCodeSchema = z.object({
@@ -29,15 +30,21 @@ const cellTypeRawSchema = z.object({
 	type: z.literal("raw"),
 	lang: z.string().optional(), // The programming language of the raw cell content.
 });
+/** JS backtick string cell type */
+const cellTypeBacktickSchema = z.object({
+	type: z.literal("backtick"),
+	lang: z.string().optional(), // The programming language of the raw cell content.
+});
 /** JSON-like data format cell type */
 const cellTypeDataSchema = z.object({
 	type: z.literal("data"),
-	lang: z.union([z.literal("json"), z.literal("yaml"), z.literal("toml")]),
+	lang: z.union([z.literal("yaml"), z.literal("toml")]),
 });
 
 export const cellTypeSchema = z.union([
 	cellTypeCodeSchema,
 	cellTypeRawSchema,
+	cellTypeBacktickSchema,
 	cellTypeDataSchema,
 ]);
 export type CellType = z.infer<typeof cellTypeSchema>;
@@ -45,7 +52,7 @@ export type CellType = z.infer<typeof cellTypeSchema>;
 export const cellMetaSchema = z.object({
 	type: cellTypeSchema,
 	color: cellColorSchema.optional(), // Color for the cell, used for UI styling.
-	displayMode: cellDisplayMode.optional(),
+	displayMode: cellDisplayModeSchema.optional(),
 	help: z.string().optional(), // Help text or documentation for the cell. markdown.
 });
 export type CellMeta = z.infer<typeof cellMetaSchema>;

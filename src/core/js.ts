@@ -49,3 +49,7 @@ export const compileCode = (code: string, names: Set<string>) => {
 	console.log(generated);
 	return generated;
 };
+
+export const wrapBacktick = (code: string) => {
+	return `\`${code.replace(/`/g, "\\`")}\``;
+};

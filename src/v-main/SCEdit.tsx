@@ -8,10 +8,12 @@ import {
 } from "solid-icons/tb";
 import {
 	cellColorSchema,
-	cellDisplayMode,
+	cellDisplayModeSchema,
 	type CellColor,
 	type CellDisplayMode,
+	type CellType,
 	type FrozenCell,
+	cellTypeSchema,
 } from "../core/cell";
 import CodeEdit from "../components/code/CodeEdit";
 
@@ -54,6 +56,83 @@ const ColorSelect: Component<ColorSelectProps> = props => {
 	);
 };
 
+type CellTypeProps = {
+	type: CellType;
+	onChange: (type: CellType) => void;
+};
+
+const CellTypeSelect: Component<CellTypeProps> = props => {
+	const currentType = () => props.type.type;
+
+	const handleTypeChange = (newType: CellType["type"]) => {
+		if (newType === "code") {
+			props.onChange({ type: "code" });
+		} else if (newType === "raw" || newType === "backtick") {
+			props.onChange({ type: newType, lang: "" });
+		} else if (newType === "data") {
+			props.onChange({ type: "data", lang: "yaml" });
+		}
+	};
+
+	const handleLangChange = (lang: string) => {
+		const t = props.type;
+		if (t.type === "raw" || t.type === "backtick") {
+			props.onChange({ ...t, lang });
+		} else if (t.type === "data") {
+			props.onChange({ ...t, lang: lang as any });
+		}
+	};
+
+	return (
+		<div class="field is-horizontal">
+			<div class="field-body">
+				<div class="field is-grouped">
+					<div class="control">
+						<div class="select">
+							<select
+								value={currentType()}
+								onChange={e =>
+									handleTypeChange(e.currentTarget.value as CellType["type"])
+								}>
+								<option value="code">Code</option>
+								<option value="raw">Raw</option>
+								<option value="backtick">Backtick</option>
+								<option value="data">Data</option>
+							</select>
+						</div>
+					</div>
+
+					<Show
+						when={props.type.type === "raw" || props.type.type === "backtick"}>
+						<div class="control is-expanded">
+							<input
+								class="input"
+								type="text"
+								placeholder="Language (e.g. javascript)"
+								value={(props.type as any).lang ?? ""}
+								onChange={e => handleLangChange(e.currentTarget.value)}
+							/>
+						</div>
+					</Show>
+
+					<Show when={props.type.type === "data"}>
+						<div class="control">
+							<div class="select">
+								<select
+									value={(props.type as any).lang}
+									onChange={e => handleLangChange(e.currentTarget.value)}>
+									<option value="yaml">JSON/YAML</option>
+									<option value="toml">TOML</option>
+								</select>
+							</div>
+						</div>
+					</Show>
+				</div>
+			</div>
+		</div>
+	);
+};
+
 type DisplayModeSelectProps = {
 	displayMode: CellDisplayMode;
 	onChange: (displayMode: CellDisplayMode) => void;
@@ -73,7 +152,7 @@ const DisplayModeSelect: Component<DisplayModeSelectProps> = props => {
 								onChange={e =>
 									props.onChange(e.currentTarget.value as CellDisplayMode)
 								}>
-								<For each={cellDisplayMode.options}>
+								<For each={cellDisplayModeSchema.options}>
 									{c => (
 										<option value={c} selected={props.displayMode === c}>
 											{c}
@@ -108,10 +187,29 @@ const SCEdit: Component<Props> = props => {
 	const [selectedDisplayMode, setSelectedDisplayMode] =
 		createSignal<CellDisplayMode>(
 			(() => {
-				const dm = cellDisplayMode.safeParse(data().meta.displayMode);
+				const dm = cellDisplayModeSchema.safeParse(data().meta.displayMode);
 				return dm.success ? dm.data : "default";
 			})(),
 		);
+	const [selectedType, setSelectedType] = createSignal<CellType>(
+		(() => {
+			const t = cellTypeSchema.safeParse(data().meta.type);
+			return t.success ? t.data : { type: "code" };
+		})(),
+	);
+
+	const cmLang = () => {
+		const t = selectedType();
+		switch (t.type) {
+			case "code":
+				return "javascript";
+			case "raw":
+			case "backtick":
+				return t.lang || "plaintext";
+			case "data":
+				return t.lang || "plaintext";
+		}
+	};
 
 	let idRef!: HTMLInputElement;
 
@@ -120,8 +218,13 @@ const SCEdit: Component<Props> = props => {
 			id: idRef.value.trim(),
 			formula: codeGetBox[0] ? codeGetBox[0]() : data().formula,
 			meta: {
-				type: { type: "code" },
+				type: selectedType(),
 				color: selectedColor() !== "none" ? selectedColor() : undefined,
+				displayMode:
+					selectedDisplayMode() !== "default"
+						? selectedDisplayMode()
+						: undefined,
+				help: data().meta.help,
 			},
 		};
 		updateCell(props.cell.uid, newData);
@@ -130,7 +233,7 @@ const SCEdit: Component<Props> = props => {
 
 	return (
 		<>
-			<div class="control has-icons-left">
+			<div class="control has-icons-left mb-2">
 				<input
 					ref={idRef}
 					class="input is-family-monospace"
@@ -141,11 +244,15 @@ const SCEdit: Component<Props> = props => {
 					<TbOutlineKey />
 				</span>
 			</div>
+			<CellTypeSelect
+				type={selectedType()}
+				onChange={t => setSelectedType(t)}
+			/>
 			<div>
 				<CodeEdit
 					class="sc-code my-2"
 					codeGetBox={codeGetBox}
-					language={"javascript"}
+					language={cmLang()}
 					initText={data().formula}
 				/>
 			</div>

@@ -8,7 +8,7 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 
 import { defaultDark, defaultLight } from "./cm_thm_default";
 
-import { javascript } from "@codemirror/lang-javascript";
+import { cmLangExt } from "./lang_ext";
 
 export interface Props extends Omit<
 	JSX.HTMLAttributes<HTMLDivElement>,
@@ -46,18 +46,6 @@ const CodeEdit: Component<Props> = props => {
 
 	// Create a stable reference to onChange to avoid reconfiguring listeners
 	const langCompartment = new Compartment();
-	const getLangExtension = (lang?: string) => {
-		switch (lang?.toLowerCase()) {
-			case "javascript":
-			case "js":
-			case "typescript":
-			case "ts":
-			case "json":
-				return javascript();
-			default:
-				return [];
-		}
-	};
 
 	const Theme = EditorView.theme({
 		"&": {
@@ -76,7 +64,7 @@ const CodeEdit: Component<Props> = props => {
 			keymap.of([...defaultKeymap, ...historyKeymap]),
 			EditorState.readOnly.of(!!local.disabled),
 			themeCompartment.of(getThemeExt()),
-			langCompartment.of(getLangExtension(local.language)),
+			langCompartment.of([]),
 			Theme,
 		];
 
@@ -94,9 +82,10 @@ const CodeEdit: Component<Props> = props => {
 	});
 
 	// Reactively update language if it changes
-	createEffect(() => {
-		if (editorView && local.language) {
-			updateCompartment(langCompartment)(getLangExtension(local.language));
+	createEffect(async () => {
+		if (editorView) {
+			const lang = await cmLangExt(local.language || "");
+			updateCompartment(langCompartment)(lang);
 		}
 	});
 

@@ -2,13 +2,77 @@ import { createSignal, untrack, type Accessor, type Setter } from "solid-js";
 import { EffectController } from "../core/effect";
 import * as Effect from "../core/effect";
 import { cellMap } from "./state";
-import { compileCode } from "../core/js";
+import { compileCode, wrapBacktick } from "../core/js";
+import type { CellType } from "../core/cell";
+import YAML from "yaml";
+import toml from "smol-toml";
 
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+
+const compileCellCode = (
+	code: string,
+	cellType: CellType,
+	nameSet: Set<string>,
+): [string, Function] => {
+	switch (cellType.type) {
+		case "code": {
+			// Compile the code as JS function
+			const compiled = compileCode(code, nameSet);
+			const effectFn = new AsyncFunction(
+				"$", // Getter objects
+				"$_", // Current effect scope
+				compiled,
+			);
+			return [compiled, effectFn];
+		}
+		case "raw": {
+			// Return the code as a raw string directly.
+			const compiled = code;
+			const effectFn = () => code;
+			return [compiled, effectFn];
+		}
+		case "backtick": {
+			// Compile the code as a JS template string, wrapping by backticks.
+			// TODO: Handle escaping backticks in the code.
+			const wrapped = wrapBacktick(code);
+			const compiled = compileCode(wrapped, nameSet);
+			const effectFn = new AsyncFunction(
+				"$", // Getter objects
+				"$_", // Current effect scope
+				compiled,
+			);
+			return [compiled, effectFn];
+		}
+		case "data": {
+			// In this case, we need to parse the code as a data format.
+			let dataJSON: string;
+			let effectFn: Function;
+			switch (cellType.lang) {
+				case "yaml": {
+					const d = YAML.parse(code);
+					dataJSON = JSON.stringify(d);
+					effectFn = () => d;
+					break;
+				}
+				case "toml": {
+					const d = toml.parse(code);
+					dataJSON = JSON.stringify(d);
+					effectFn = () => d;
+					break;
+				}
+				default: {
+					throw new Error(`Unsupported data format: ${(cellType as any).lang}`);
+				}
+			}
+			return [dataJSON, effectFn];
+		}
+	}
+};
 
 type CellInternal = {
 	id: string;
 	code: string;
+	cellType: CellType;
 
 	// Compile result
 	compiled: string;
@@ -62,9 +126,11 @@ class Runner {
 
 		// Traverse cells and gather data.
 		for (const c of cellMap.values()) {
-			items.set(c.getData().id, {
-				id: c.getData().id,
-				code: c.getData().formula,
+			const d = c.getData();
+			items.set(d.id, {
+				id: d.id,
+				code: d.formula,
+				cellType: d.meta.type,
 				compiled: "", // Put empty yet.
 				effectFn: () => {}, // Put empty yet.
 				initValue: c.value(),
@@ -79,12 +145,9 @@ class Runner {
 		for (const [, i] of items) {
 			let initValue = i.initValue;
 			try {
-				i.compiled = compileCode(i.code, nameSet);
-				i.effectFn = new AsyncFunction(
-					"$", // Getter objects
-					"$_", // Current effect scope
-					i.compiled,
-				);
+				const [c, f] = compileCellCode(i.code, i.cellType, nameSet);
+				i.compiled = c;
+				i.effectFn = f;
 			} catch (e) {
 				console.error(`Error compiling cell ${i.id}:`, e);
 				i.effectFn = () => {
