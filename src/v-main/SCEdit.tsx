@@ -1,5 +1,6 @@
-import { createSignal, For, Show, type Component } from "solid-js";
-import { deleteCell, updateCell, type Cell } from "./state";
+import { createSignal, For, Show, untrack, type Component } from "solid-js";
+import { deleteCell, updateCell, type Cell, cellMap } from "./state";
+import { compileCellCode } from "./runner";
 import {
 	TbOutlineCancel,
 	TbOutlineCheck,
@@ -16,6 +17,8 @@ import {
 	cellTypeSchema,
 } from "../core/cell";
 import CodeEdit from "../components/code/CodeEdit";
+import { isSupportedLang } from "../components/code/lang_ext";
+import toast from "solid-toast";
 
 type ColorSelectProps = {
 	color: CellColor;
@@ -106,7 +109,13 @@ const CellTypeSelect: Component<CellTypeProps> = props => {
 						when={props.type.type === "raw" || props.type.type === "backtick"}>
 						<div class="control is-expanded">
 							<input
-								class="input"
+								class={
+									"input " +
+									((props.type as any).lang &&
+									!isSupportedLang((props.type as any).lang)
+										? "is-danger"
+										: "")
+								}
 								type="text"
 								placeholder="Language (e.g. javascript)"
 								value={(props.type as any).lang ?? ""}
@@ -213,12 +222,29 @@ const SCEdit: Component<Props> = props => {
 
 	let idRef!: HTMLInputElement;
 
+	const [compileError, setCompileError] = createSignal<string>();
+
 	const handleSave = () => {
+		const id = idRef.value.trim();
+		const formula = codeGetBox[0] ? codeGetBox[0]() : data().formula;
+		const type = selectedType();
+
+		// Validation: Compilation
+		try {
+			const nameSet = new Set<string>();
+			compileCellCode(formula, type, nameSet);
+			setCompileError(undefined);
+		} catch (e) {
+			setCompileError(String(e));
+			toast.error("Code compile error! Please fix before saving.");
+			return;
+		}
+
 		const newData: FrozenCell = {
-			id: idRef.value.trim(),
-			formula: codeGetBox[0] ? codeGetBox[0]() : data().formula,
+			id,
+			formula,
 			meta: {
-				type: selectedType(),
+				type,
 				color: selectedColor() !== "none" ? selectedColor() : undefined,
 				displayMode:
 					selectedDisplayMode() !== "default"
@@ -248,6 +274,17 @@ const SCEdit: Component<Props> = props => {
 				type={selectedType()}
 				onChange={t => setSelectedType(t)}
 			/>
+
+			<Show when={compileError()}>
+				<div class="notification is-danger my-2">
+					<button
+						class="delete"
+						onClick={() => setCompileError(undefined)}></button>
+					<strong>Compilation Error:</strong>
+					<pre class="is-background-transparent p-0 mt-1">{compileError()}</pre>
+				</div>
+			</Show>
+
 			<div>
 				<CodeEdit
 					class="sc-code my-2"

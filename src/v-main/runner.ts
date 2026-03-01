@@ -9,7 +9,7 @@ import toml from "smol-toml";
 
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 
-const compileCellCode = (
+export const compileCellCode = (
 	code: string,
 	cellType: CellType,
 	nameSet: Set<string>,

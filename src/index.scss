@@ -56,3 +56,10 @@ $success-green: rgb(72, 199, 120);
 	-moz-user-select: none;
 	-webkit-user-drag: none;
 }
+
+.is-abs-top-right {
+	position: absolute;
+	top: 0.25rem;
+	right: 0.25rem;
+	z-index: 3;
+}
