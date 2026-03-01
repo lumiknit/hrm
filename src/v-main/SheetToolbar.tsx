@@ -3,7 +3,6 @@ import {
 	TbOutlineCheckbox,
 	TbOutlineDeviceFloppy,
 	TbOutlineFolder,
-	TbOutlineHelpCircle,
 	TbOutlinePlus,
 	TbOutlineProgress,
 	TbOutlineRefresh,
@@ -171,14 +170,6 @@ const Toolbar: Component = () => {
 					<TbOutlineCheckbox />
 				</span>
 			</button>
-
-			<span class="mx-1" />
-
-			<a class="button is-small" href="#/about">
-				<span class="icon">
-					<TbOutlineHelpCircle />
-				</span>
-			</a>
 		</div>
 	);
 };

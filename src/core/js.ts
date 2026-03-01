@@ -46,8 +46,33 @@ export const compileCode = (code: string, names: Set<string>) => {
 	}
 
 	const generated = generate(ast);
-	console.log(generated);
 	return generated;
+};
+
+/**
+ * Rename identifiers based on the name map.
+ */
+export const renameIdentifiersCode = (
+	code: string,
+	nameMap: Map<string, string>,
+) => {
+	const ast = parse(code, {
+		ecmaVersion: "latest",
+		sourceType: "script",
+		allowReturnOutsideFunction: true,
+		allowAwaitOutsideFunction: true,
+	});
+
+	simple(ast, {
+		Identifier(node) {
+			if (nameMap.has(node.name)) {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				node.name = nameMap.get(node.name)!;
+			}
+		},
+	});
+
+	return generate(ast);
 };
 
 /**

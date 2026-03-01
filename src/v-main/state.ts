@@ -13,7 +13,7 @@ import {
 } from "../core/cell";
 import { uniqueID } from "../core/id";
 import toast from "solid-toast";
-import { validJSIdentifier } from "../core/js";
+import { renameIdentifiersCode, validJSIdentifier } from "../core/js";
 import { runner } from "./runner";
 import { SheetDB } from "../core/cell-idb";
 
@@ -54,6 +54,11 @@ export const [sheetDirty, setSheetDirty] = createSignal<boolean>(false);
  * cells only contains the list of cells in the current sheet
  */
 export const [cells, setCells] = createSignal<string[]>([]);
+
+export const [selectedCells, setSelectedCells] = createSignal<Set<string>>(
+	new Set(),
+);
+export const [cellDragging, setCellDragging] = createSignal<boolean>(false);
 
 /** cellMap maps from cell.uid to the corresponding Cell object */
 export const cellMap: Map<string, Cell> = new Map();
@@ -171,6 +176,7 @@ export const addEmptyCell = (idx?: number) => {
 		}
 		return copy;
 	});
+	setSelectedCells(new Set([newCell.uid]));
 	setSheetDirty(true);
 	toast.success("Added cell: " + untrack(() => newCell.getData()).id);
 };
@@ -237,4 +243,97 @@ export const deleteCell = (uid: string) => {
 
 export const checkSheetDirty = (): boolean => {
 	return untrack(sheetDirty);
+};
+
+export const cloneSelectedCells = () => {
+	const selected = selectedCells();
+	if (selected.size === 0) {
+		toast.error("No cells selected to clone.");
+		return;
+	}
+
+	const newCells: Cell[] = [];
+	const nameMap = new Map<string, string>();
+	const existingNames = new Set<string>();
+	for (const c of cellMap.values()) {
+		existingNames.add(untrack(() => c.getData()).id);
+	}
+
+	// First pass: generate new names and mapping
+	const originalCells: FrozenCell[] = [];
+	for (const uid of selected) {
+		const cell = cellMap.get(uid);
+		if (cell) {
+			const data = untrack(() => cell.getData());
+			originalCells.push(data);
+			let newName = "";
+			for (let i = 1; ; i++) {
+				newName = `${data.id}_${i}`;
+				if (!existingNames.has(newName)) {
+					existingNames.add(newName);
+					break;
+				}
+			}
+			nameMap.set(data.id, newName);
+		}
+	}
+
+	// Second pass: clone cells and rewrite code if needed
+	for (const data of originalCells) {
+		const newName = nameMap.get(data.id)!;
+		const baseClone = JSON.parse(JSON.stringify(data)) as typeof data;
+
+		baseClone.id = newName;
+		if (baseClone.meta.type.type === "code") {
+			try {
+				baseClone.formula = renameIdentifiersCode(baseClone.formula, nameMap);
+			} catch (e) {
+				console.error(
+					`Failed to rename identifiers in clone of ${data.id}:`,
+					e,
+				);
+			}
+		}
+
+		const newCell = thawCell(baseClone);
+		cellMap.set(newCell.uid, newCell);
+		newCells.push(newCell);
+	}
+
+	setCells(prev => {
+		const copy = [...prev];
+		for (const nc of newCells) {
+			copy.push(nc.uid);
+		}
+		return copy;
+	});
+
+	setSelectedCells(new Set(newCells.map(c => c.uid)));
+	setSheetDirty(true);
+	toast.success(`Cloned ${newCells.length} cell(s).`);
+	runner.recompile();
+};
+
+export const deleteSelectedCells = () => {
+	const selected = selectedCells();
+	if (selected.size === 0) {
+		toast.error("No cells selected to delete.");
+		return;
+	}
+
+	if (!confirm(`Are you sure you want to delete ${selected.size} cell(s)?`)) {
+		return;
+	}
+
+	batch(() => {
+		setCells(prev => prev.filter(id => !selected.has(id)));
+		for (const uid of selected) {
+			cellMap.delete(uid);
+		}
+		setSelectedCells(new Set<string>());
+	});
+
+	setSheetDirty(true);
+	toast.success(`Deleted ${selected.size} cell(s).`);
+	runner.recompile();
 };

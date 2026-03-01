@@ -6,6 +6,9 @@ import { marked, type MarkedOptions } from "marked";
 import MD5 from "crypto-js/md5";
 
 export const putBuiltins = (target: Record<string, any>) => {
+	target.sleep = (ms: number): Promise<void> => {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	};
 	// Base64
 	target.base64 = {
 		encode: (s: string) => {
