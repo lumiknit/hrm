@@ -175,7 +175,7 @@ const SortableCellHolder: Component<SortableCellProps> = props => {
 };
 
 const SheetCellList: Component<SheetCellListProps> = () => {
-	const handleDragStart = (event: DragEvent) => {
+	const handleDragStart = () => {
 		setCellDragging(true);
 	};
 

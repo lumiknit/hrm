@@ -52,7 +52,10 @@ export const compileCode = (code: string, names: Set<string>) => {
 /**
  * Rename identifiers based on the name map.
  */
-export const renameIdentifiersCode = (code: string, nameMap: Map<string, string>) => {
+export const renameIdentifiersCode = (
+	code: string,
+	nameMap: Map<string, string>,
+) => {
 	const ast = parse(code, {
 		ecmaVersion: "latest",
 		sourceType: "script",

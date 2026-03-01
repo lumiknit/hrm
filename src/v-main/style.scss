@@ -46,7 +46,7 @@
 .sc-v-hd {
 	position: relative;
 
-	&>span.icon {
+	& > span.icon {
 		position: absolute;
 		top: 0;
 		right: 0;
@@ -89,9 +89,11 @@
 
 	font-family: var(--cm-monospace);
 	font-size: 1rem;
-	background-color: hsl(var(--bulma-scheme-h),
-			var(--bulma-scheme-s),
-			var(--value-bg-l));
+	background-color: hsl(
+		var(--bulma-scheme-h),
+		var(--bulma-scheme-s),
+		var(--value-bg-l)
+	);
 	border-radius: 0.25rem;
 
 	padding: 0.25rem;
