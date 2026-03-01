@@ -6,6 +6,7 @@ import {
 	TbOutlineHelpCircle,
 	TbOutlinePlus,
 	TbOutlineProgress,
+	TbOutlineRefresh,
 } from "solid-icons/tb";
 import { Switch, Match, type Component, createSignal } from "solid-js";
 import { runner } from "./runner";
@@ -140,6 +141,14 @@ const Toolbar: Component = () => {
 	return (
 		<div class="sheet-toolbar has-shadow m-1 p-2">
 			<RunningIndicator />
+			<button
+				class="button is-small"
+				onClick={() => runner.recompile()}
+				title="Re-compile">
+				<span class="icon">
+					<TbOutlineRefresh />
+				</span>
+			</button>
 
 			<span class="mx-1" />
 

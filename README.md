@@ -44,6 +44,7 @@ You can configure how data is interpreted and rendered:
   - `JSON / YAML / TOML`: Pretty-prints the cell's value in the chosen format.
   - `Markdown`: Renders text as sanitized Markdown.
   - `HTML`: Renders text as sanitized HTML.
+  - `Input`: Show an editable input field bound to the cell's value.
 
 To change these settings, click the **pencil icon** to edit a cell and expand **More Options**.
 
@@ -65,27 +66,25 @@ but the CPU usage may spike.
 Suppose that `a: expr` represents a cell with ID `a` and code `expr`.
 
 ```js
-a: 42
-b: a * 2
+a: 42;
+b: a * 2;
 ```
 
 In the above example, `b` will automatically update to `84`.
 
 ```js
-start: "Hello"
-encoded: base64.encode(start)
-decoded: base64.decode(encoded)
+start: "Hello";
+encoded: base64.encode(start);
+decoded: base64.decode(encoded);
 ```
 
 In this example, `encoded` will contain the Base64 string of "Hello", and `decoded` will return it back to "Hello".
 
 ```js
-a: a + 1
+a: a + 1;
 ```
 
 WARNING: This will create an infinite loop as `a` depends on itself.
-
-
 
 ### Built-in Functions
 
