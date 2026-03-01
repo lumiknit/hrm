@@ -19,6 +19,7 @@ const SheetCell: Component<SheetCellProps> = props => {
 			<Switch>
 				<Match when={!editing()}>
 					<SCView
+						uid={props.uid}
 						cell={cell}
 						onEditStart={() => {
 							setEditing(true);

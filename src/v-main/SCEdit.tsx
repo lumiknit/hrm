@@ -291,6 +291,7 @@ const SCEdit: Component<Props> = props => {
 					codeGetBox={codeGetBox}
 					language={cmLang()}
 					initText={data().formula}
+					onKeyModEnter={handleSave}
 				/>
 			</div>
 
@@ -298,7 +299,7 @@ const SCEdit: Component<Props> = props => {
 				<div
 					class="has-text-centered is-size-6 show-option-toggle cursor-pointer"
 					onClick={() => setShowOptions(s => !s)}>
-					- More Options -
+					{showOptions() ? "- Hide Options- " : "- Show Options -"}
 				</div>
 				<Show when={showOptions()}>
 					<ColorSelect

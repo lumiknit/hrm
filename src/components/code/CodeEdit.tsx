@@ -2,7 +2,12 @@ import { createEffect, onCleanup, onMount, splitProps } from "solid-js";
 import type { Component, JSX } from "solid-js";
 import { createMediaQuery } from "@solid-primitives/media";
 
-import { Compartment, EditorState, type Extension } from "@codemirror/state";
+import {
+	Compartment,
+	EditorState,
+	type Extension,
+	Prec,
+} from "@codemirror/state";
 import { EditorView, lineNumbers, keymap } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 
@@ -19,6 +24,7 @@ export interface Props extends Omit<
 	disabled?: boolean;
 
 	codeGetBox: [(() => string)?];
+	onKeyModEnter?: () => void; // Enter with modifier
 }
 
 const CodeEdit: Component<Props> = props => {
@@ -62,6 +68,38 @@ const CodeEdit: Component<Props> = props => {
 			lineNumbers(),
 			history(),
 			keymap.of([...defaultKeymap, ...historyKeymap]),
+			Prec.highest(
+				keymap.of([
+					{
+						key: "Alt-Enter",
+						run: () => {
+							props.onKeyModEnter?.();
+							return true;
+						},
+					},
+					{
+						key: "Mod-Enter",
+						run: () => {
+							props.onKeyModEnter?.();
+							return true;
+						},
+					},
+					{
+						key: "Shift-Enter",
+						run: () => {
+							props.onKeyModEnter?.();
+							return true;
+						},
+					},
+					{
+						key: "Ctrl-Enter",
+						run: () => {
+							props.onKeyModEnter?.();
+							return true;
+						},
+					},
+				]),
+			),
 			EditorState.readOnly.of(!!local.disabled),
 			themeCompartment.of(getThemeExt()),
 			langCompartment.of([]),

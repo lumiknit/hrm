@@ -65,27 +65,25 @@ but the CPU usage may spike.
 Suppose that `a: expr` represents a cell with ID `a` and code `expr`.
 
 ```js
-a: 42
-b: a * 2
+a: 42;
+b: a * 2;
 ```
 
 In the above example, `b` will automatically update to `84`.
 
 ```js
-start: "Hello"
-encoded: base64.encode(start)
-decoded: base64.decode(encoded)
+start: "Hello";
+encoded: base64.encode(start);
+decoded: base64.decode(encoded);
 ```
 
 In this example, `encoded` will contain the Base64 string of "Hello", and `decoded` will return it back to "Hello".
 
 ```js
-a: a + 1
+a: a + 1;
 ```
 
 WARNING: This will create an infinite loop as `a` depends on itself.
-
-
 
 ### Built-in Functions
 

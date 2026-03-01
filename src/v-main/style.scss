@@ -67,6 +67,25 @@
 
 .sc-code {
 	overflow: scroll;
-	max-height: 50svh;
+	max-height: 30svh;
 	border-radius: 0.25rem;
+}
+
+.value-display {
+	white-space: pre-wrap;
+	word-break: break-all;
+	word-wrap: break-word;
+	max-height: 25svh;
+	overflow: auto;
+
+	font-family: var(--cm-monospace);
+	font-size: 1rem;
+	background-color: hsl(
+		var(--bulma-scheme-h),
+		var(--bulma-scheme-s),
+		var(--value-bg-l)
+	);
+	border-radius: 0.25rem;
+
+	padding: 0.25rem;
 }

@@ -18,6 +18,7 @@ export const cellDisplayModeSchema = z.enum([
 	"toml",
 	"markdown",
 	"html",
+	"input",
 ]);
 export type CellDisplayMode = z.infer<typeof cellDisplayModeSchema>;
 

@@ -50,6 +50,7 @@ export const actionOpenSheet = async (id: string) => {
 			}
 			loadSheet(sheet, id);
 			runner.recompile();
+			location.href = "#/";
 		})(),
 		{
 			loading: "Loading sheet...",

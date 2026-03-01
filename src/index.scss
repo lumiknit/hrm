@@ -16,6 +16,7 @@ $success-green: rgb(72, 199, 120);
 	--cm-monospace: monospace;
 
 	--cell-bg-l: 96%;
+	--value-bg-l: 94%;
 	--sc-cell-bg: hsl(
 		var(--bulma-scheme-h),
 		var(--bulma-scheme-s),
@@ -27,6 +28,7 @@ $success-green: rgb(72, 199, 120);
 	:root {
 		--bulma-scheme-main-l: 0%;
 		--cell-bg-l: 8%;
+		--value-bg-l: 12%;
 	}
 
 	.input,
