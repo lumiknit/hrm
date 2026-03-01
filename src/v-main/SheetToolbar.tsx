@@ -3,14 +3,20 @@ import {
 	TbOutlineCheckbox,
 	TbOutlineDeviceFloppy,
 	TbOutlineFolder,
-	TbOutlineHelpCircle,
 	TbOutlinePlus,
 	TbOutlineProgress,
 	TbOutlineRefresh,
+	TbOutlineCopy,
+	TbOutlineTrash,
 } from "solid-icons/tb";
 import { Switch, Match, type Component, createSignal } from "solid-js";
 import { runner } from "./runner";
-import { addEmptyCell, sheetDirty } from "./state";
+import {
+	addEmptyCell,
+	cloneSelectedCells,
+	deleteSelectedCells,
+	sheetDirty,
+} from "./state";
 import { showOpenSheetModal } from "./ModalOpenSheet";
 import { showImportSheetModal } from "./ModalImportSheet";
 import { showExportSheetModal } from "./ModalExportSheet";
@@ -171,14 +177,6 @@ const Toolbar: Component = () => {
 					<TbOutlineCheckbox />
 				</span>
 			</button>
-
-			<span class="mx-1" />
-
-			<a class="button is-small" href="#/about">
-				<span class="icon">
-					<TbOutlineHelpCircle />
-				</span>
-			</a>
 		</div>
 	);
 };
