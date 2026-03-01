@@ -2,7 +2,7 @@
  * Getter is a function which returns a value of the signal.
  * If Getter is called inside an effect, the effect will be subscribed to the signal.
  */
-export type Getter<T> = () => T;
+export type Getter<T> = (ctx?: Effect) => T;
 
 /**
  * Setter is a function which update a value of the signal.
@@ -15,8 +15,8 @@ export type Setter<T> = (value: T) => void;
  */
 export type Signal<T> = [Getter<T>, Setter<T>];
 
-type Effect = {
-	execute: () => void;
+export type Effect = {
+	execute: () => void | Promise<void>;
 	deps: Set<Set<Effect>>;
 };
 
@@ -26,7 +26,6 @@ type Effect = {
  * Also, you can manually execute effects by runOne or run method.
  */
 export class EffectController {
-	private effectStack: Effect[] = [];
 	private pendingEffects: Set<Effect> = new Set();
 
 	public runMicroBatchSize = 200;
@@ -41,11 +40,10 @@ export class EffectController {
 		let value = initValue;
 		const subscribers = new Set<Effect>();
 
-		const get = () => {
-			const currentEffect = this.effectStack[this.effectStack.length - 1];
-			if (currentEffect) {
-				subscribers.add(currentEffect);
-				currentEffect.deps.add(subscribers);
+		const get = (ctx?: Effect) => {
+			if (ctx) {
+				subscribers.add(ctx);
+				ctx.deps.add(subscribers);
 			}
 			return value;
 		};
@@ -67,19 +65,13 @@ export class EffectController {
 	 * Create a reactive effect that runs the provided function.
 	 * @param fn The function to run as an effect.
 	 */
-	public eff(fn: () => void) {
+	public eff(fn: (ctx: Effect) => void | Promise<void>) {
 		const effect: Effect = {
 			execute: () => {
 				// Cleanup: 실행 전 기존의 모든 구독 관계를 끊음
-				effect.deps.forEach((subSet) => subSet.delete(effect));
+				effect.deps.forEach(subSet => subSet.delete(effect));
 				effect.deps.clear();
-
-				this.effectStack.push(effect);
-				try {
-					fn();
-				} finally {
-					this.effectStack.pop();
-				}
+				return fn(effect);
 			},
 			deps: new Set(),
 		};
@@ -88,26 +80,17 @@ export class EffectController {
 	}
 
 	/**
-	 * Create a memoized getter that computes its value based on the provided function.
-	 * @param fn The function to compute and return the value.
-	 * @returns
-	 */
-	public memo<T>(fn: () => T): Getter<T> {
-		const [get, set] = this.sig<T>(undefined as any);
-		this.eff(() => {
-			set(fn());
-		});
-		return get;
-	}
-
-	/**
 	 * Run single pending effect.
 	 */
-	public runOne(): boolean {
+	public async runOne(): Promise<boolean> {
 		const effect = this.pendingEffects.values().next().value;
 		if (effect) {
 			this.pendingEffects.delete(effect);
-			effect.execute();
+			try {
+				await effect.execute();
+			} catch (e) {
+				console.error("Error in effect:", e);
+			}
 			return true;
 		}
 		return false;
@@ -116,7 +99,7 @@ export class EffectController {
 	/**
 	 * Asynchronously run pending effects.
 	 */
-	public async run(limit?: number) {
+	public async run(limit?: number): Promise<number> {
 		if (limit === undefined) {
 			limit = Infinity;
 		}
@@ -127,21 +110,22 @@ export class EffectController {
 		let macro = 0;
 
 		while (counter < limit) {
-			if (!this.runOne()) {
+			if (!(await this.runOne())) {
 				break;
 			}
 			counter++;
 			if (counter % this.runMicroBatchSize === 0) {
 				let elapsed = performance.now() - now;
 				if (elapsed >= this.macroBatchDuration) {
-					await new Promise<void>((resolve) => setTimeout(resolve, 0));
+					await new Promise<void>(resolve => setTimeout(resolve, 0));
 					now = performance.now();
 					macro++;
 				} else {
-					await new Promise<void>((resolve) => queueMicrotask(resolve));
+					await new Promise<void>(resolve => queueMicrotask(resolve));
 					micro++;
 				}
 			}
 		}
+		return counter;
 	}
 }

@@ -1,0 +1,72 @@
+.sheet-cell-list {
+	position: relative;
+}
+
+.sc-drag-container {
+	border-radius: 0.25rem;
+
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	margin: 0.25rem;
+	overflow: hidden;
+
+	position: relative;
+
+	background-color: var(--sc-cell-bg);
+}
+
+.sc-drag-handle {
+	cursor: pointer;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-drag: none;
+
+	flex: 0;
+	padding: 0.5rem;
+
+	touch-action: none;
+
+	align-content: center;
+}
+
+.sc-drag-content {
+	flex: 1;
+	padding: 0.5rem;
+}
+
+.sc-v-hd {
+	position: relative;
+	& > span.icon {
+		position: absolute;
+		top: 0;
+		right: 0;
+		pointer-events: none;
+	}
+}
+
+.sc-v-formula {
+	min-width: 10rem;
+	cursor: pointer;
+	flex: 1;
+}
+
+.sheet-toolbar {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.25rem;
+
+	border-radius: 0.25rem;
+	background: var(--bulma-body-background-color);
+}
+
+.sc-code {
+	overflow: scroll;
+	max-height: 50svh;
+	border-radius: 0.25rem;
+}
