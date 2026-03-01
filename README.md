@@ -44,6 +44,7 @@ You can configure how data is interpreted and rendered:
   - `JSON / YAML / TOML`: Pretty-prints the cell's value in the chosen format.
   - `Markdown`: Renders text as sanitized Markdown.
   - `HTML`: Renders text as sanitized HTML.
+  - `Input`: Show an editable input field bound to the cell's value.
 
 To change these settings, click the **pencil icon** to edit a cell and expand **More Options**.
 
