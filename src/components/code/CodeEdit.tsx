@@ -10,7 +10,7 @@ import {
 } from "@codemirror/state";
 import { EditorView, lineNumbers, keymap } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { autocompletion, completeFromList } from "@codemirror/autocomplete";
+import { autocompletion } from "@codemirror/autocomplete";
 
 import { defaultDark, defaultLight } from "./cm_thm_default";
 
@@ -121,11 +121,14 @@ const CodeEdit: Component<Props> = props => {
 					reader.onload = e => {
 						const text = e.target?.result;
 						if (typeof text === "string") {
-							const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+							const pos = view.posAtCoords({
+								x: event.clientX,
+								y: event.clientY,
+							});
 							if (pos !== null) {
 								view.dispatch({
 									changes: { from: pos, to: pos, insert: text },
-									selection: { anchor: pos + text.length }
+									selection: { anchor: pos + text.length },
 								});
 								view.focus();
 							}
@@ -134,7 +137,7 @@ const CodeEdit: Component<Props> = props => {
 
 					reader.readAsText(file);
 					return true;
-				}
+				},
 			}),
 		];
 

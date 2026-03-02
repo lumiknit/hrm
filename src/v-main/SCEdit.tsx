@@ -4,7 +4,6 @@ import { compileCellCode } from "./runner";
 import {
 	TbOutlineCancel,
 	TbOutlineCheck,
-	TbOutlineIceCream,
 	TbOutlineIceCream2,
 	TbOutlineKey,
 	TbOutlineTrash,

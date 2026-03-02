@@ -27,7 +27,6 @@ import { showOpenSheetModal } from "./ModalOpenSheet";
 import { showImportSheetModal } from "./ModalImportSheet";
 import { showExportSheetModal } from "./ModalExportSheet";
 import {
-	actionDeleteSheet,
 	actionEditSelectedCells,
 	actionNewSheet,
 	actionSaveSheet,
