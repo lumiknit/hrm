@@ -10,6 +10,7 @@ import {
 } from "@codemirror/state";
 import { EditorView, lineNumbers, keymap } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import { autocompletion, completeFromList } from "@codemirror/autocomplete";
 
 import { defaultDark, defaultLight } from "./cm_thm_default";
 
@@ -56,9 +57,13 @@ const CodeEdit: Component<Props> = props => {
 	const Theme = EditorView.theme({
 		"&": {
 			fontSize: "1rem",
+			maxHeight: "30svh",
 		},
 		".cm-content": {
 			fontFamily: "var(--cm-monospace)",
+		},
+		".cm-scroller": {
+			overflow: "auto",
 		},
 	});
 
@@ -67,6 +72,7 @@ const CodeEdit: Component<Props> = props => {
 		const extensions = [
 			lineNumbers(),
 			history(),
+			autocompletion(),
 			keymap.of([...defaultKeymap, ...historyKeymap]),
 			Prec.highest(
 				keymap.of([
@@ -133,13 +139,7 @@ const CodeEdit: Component<Props> = props => {
 		}
 	});
 
-	return (
-		<div
-			ref={containerRef}
-			{...rest}
-			class={`text-edit-container flex flex-column ${local.class || ""}`}
-		/>
-	);
+	return <div ref={containerRef} {...rest} class={local.class} />;
 };
 
 export default CodeEdit;

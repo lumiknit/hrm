@@ -9,7 +9,6 @@
 	flex-direction: row;
 	align-items: stretch;
 	margin: 0.25rem;
-	overflow: hidden;
 
 	position: relative;
 
@@ -75,8 +74,6 @@
 }
 
 .sc-code {
-	overflow: scroll;
-	max-height: 30svh;
 	border-radius: 0.25rem;
 }
 
