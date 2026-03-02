@@ -17,7 +17,6 @@ import { renameIdentifiersCode, validJSIdentifier } from "../core/js";
 import { SheetDB } from "../core/cell-idb";
 import {
 	clearHistory,
-	type HistoryItem,
 	type CellAction,
 	pushAndPerformAction,
 	runUndo,
@@ -33,11 +32,15 @@ export type Cell = {
 	// Value in Solid.JS for rendering
 	value: Accessor<any>;
 	setValue: Setter<any>;
+
+	editing: Accessor<boolean>;
+	setEditing: Setter<boolean>;
 };
 
 export const thawCell = (frozen: FrozenCell): Cell => {
 	const [data, setData] = createSignal(frozen);
 	const [value, setValue] = createSignal<any>(undefined);
+	const [editing, setEditing] = createSignal(false);
 
 	return {
 		uid: uniqueID(),
@@ -45,6 +48,8 @@ export const thawCell = (frozen: FrozenCell): Cell => {
 		setData,
 		value,
 		setValue,
+		editing,
+		setEditing,
 	};
 };
 

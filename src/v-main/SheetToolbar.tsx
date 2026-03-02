@@ -17,11 +17,21 @@ import {
 	onCleanup,
 } from "solid-js";
 import { runner } from "./runner";
-import { addEmptyCell, sheetDirty } from "./state";
+import {
+	addEmptyCell,
+	cloneSelectedCells,
+	deleteSelectedCells,
+	sheetDirty,
+} from "./state";
 import { showOpenSheetModal } from "./ModalOpenSheet";
 import { showImportSheetModal } from "./ModalImportSheet";
 import { showExportSheetModal } from "./ModalExportSheet";
-import { actionNewSheet, actionSaveSheet } from "./state-action";
+import {
+	actionDeleteSheet,
+	actionEditSelectedCells,
+	actionNewSheet,
+	actionSaveSheet,
+} from "./state-action";
 import { runUndo, runRedo, canUndo, canRedo } from "./history";
 
 const RunningIndicator: Component = () => {
@@ -148,13 +158,53 @@ const SaveButton: Component = () => {
 const Toolbar: Component = () => {
 	onMount(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
+			// Check focus is not on an input, textarea, or contenteditable element
+			const target = e.target as HTMLElement;
+			if (
+				target.tagName === "INPUT" ||
+				target.tagName === "TEXTAREA" ||
+				target.tagName === "SELECT" ||
+				target.isContentEditable
+			) {
+				return;
+			}
+
 			if (e.ctrlKey || e.metaKey) {
-				if (e.key === "z") {
-					e.preventDefault();
-					runUndo();
-				} else if (e.key === "y" || (e.key === "Z" && e.shiftKey)) {
-					e.preventDefault();
-					runRedo();
+				switch (e.key) {
+					case "z":
+						e.preventDefault();
+						if (e.shiftKey) {
+							runRedo();
+						} else {
+							runUndo();
+						}
+						break;
+					case "y":
+						e.preventDefault();
+						runRedo();
+						break;
+					case "s":
+						e.preventDefault();
+						actionSaveSheet();
+						break;
+					case "d":
+						e.preventDefault();
+						cloneSelectedCells();
+						break;
+					case "o":
+						e.preventDefault();
+						showOpenSheetModal();
+						break;
+				}
+			} else {
+				switch (e.key) {
+					case "Enter":
+						actionEditSelectedCells();
+						break;
+					case "Backspace":
+					case "Delete":
+						deleteSelectedCells();
+						break;
 				}
 			}
 		};

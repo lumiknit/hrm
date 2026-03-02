@@ -1,7 +1,14 @@
 // Action is wrapper for other API, with user-friendly toast/confirm and error handling.
 
 import toast from "solid-toast";
-import { loadSheet, reset, saveCurrentSheet } from "./state";
+import {
+	cellMap,
+	loadSheet,
+	reset,
+	saveCurrentSheet,
+	selectedCells,
+	setSelectedCells,
+} from "./state";
 import { SheetDB } from "../core/cell-idb";
 import { runner } from "./runner";
 
@@ -61,4 +68,18 @@ export const actionOpenSheet = async (id: string) => {
 			},
 		},
 	);
+};
+
+export const actionSelectAllCells = () => {
+	const allUIDs = Array.from(cellMap.keys());
+	setSelectedCells(new Set(allUIDs));
+};
+
+export const actionEditSelectedCells = () => {
+	for (const uid of selectedCells()) {
+		const cell = cellMap.get(uid);
+		if (cell) {
+			cell.setEditing(true);
+		}
+	}
 };
