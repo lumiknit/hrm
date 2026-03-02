@@ -9,6 +9,8 @@ https://lumiknit.github.io/apps/hrm
 - **Standard JavaScript**: Write your logic using the JavaScript you already know.
 - **Local-First**: Data is processed and stored entirely within your browser (IndexedDB). No external servers required.
 - **Reactive Workflow**: Cells update automatically when their dependencies change.
+- **Undo/Redo History**: Confidently make changes with full undo and redo support for cell modifications (add, edit, delete, reorder).
+- **Editor Enhancements**: Enjoy syntax autocompletion and seamless drag-and-drop file insertion directly into your code cells.
 - **Flexible Data Handling**: Specialized support for YAML, TOML, Markdown, and HTML.
 - **Developer Tools**: Fast copy-to-clipboard and one-click file downloads for cell outputs.
 - **Mobile Friendly**: Designed to work conveniently on both desktop and mobile browsers.
@@ -90,6 +92,12 @@ WARNING: This will create an infinite loop as `a` depends on itself.
 
 Hrm provides several built-in utilities accessible within any cell:
 
+- **Math & Arrays**:
+  - `range(start, end, step)`: Returns an array of numbers.
+  - `sum(...arr)`, `product(...arr)`, `avg(...arr)` (or `average`), `stdev(...arr)`
+  - `min(...arr)`, `max(...arr)`, `clamp(val, min, max)`
+  - `randomInt(min, max)`
+  - `zip(a, b)`, `unzip(pairs)`
 - **Base64**:
   - `base64.encode(s)` / `base64.decode(s)`: Standard Base64.
   - `base64.encodeURLSafe(s)`: URL-safe Base64 without padding.
@@ -101,13 +109,16 @@ Hrm provides several built-in utilities accessible within any cell:
 - **Hashing & Crypto**:
   - `md5(s)`: Returns an MD5 hex string.
   - `sha1(s)`, `sha256(s)`, `sha384(s)`, `sha512(s)`: `async` functions returning hex strings (Web Crypto API).
+- **UUID Generation**:
+  - `uuid()`, `uuidv4()`, `uuidv6()`, `uuidv7()`
 
 ### Other UI Description
 
 - **Managing Sheets**: Use the Sidebar to Save, Load, or Reset your workspace.
 - **Import/Export**: You can Import or Export your entire notebook as a `.json` file for backup or sharing.
 - **Adding Cells**: Use the "Add Cell" button at the bottom of the list.
-- **Drag & Drop**: Grab the handle on the left side of any cell to change its order.
+- **Drag & Drop**: Grab the handle on the left side of any cell to change its order. You can also drag and drop local files directly into the code editor to insert their contents.
+- **Undo/Redo**: Use the toolbar buttons or standard keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y` / `Ctrl+Shift+Z`) to undo or redo your actions. Deleted cells can be quickly restored via the undo toast notification.
 
 ## Build
 

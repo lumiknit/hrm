@@ -1,9 +1,10 @@
 import { createSignal, For, Show, type Component } from "solid-js";
-import { deleteCell, updateCell, type Cell } from "./state";
+import { deleteCell, freezeCellValue, updateCell, type Cell } from "./state";
 import { compileCellCode } from "./runner";
 import {
 	TbOutlineCancel,
 	TbOutlineCheck,
+	TbOutlineIceCream2,
 	TbOutlineKey,
 	TbOutlineTrash,
 } from "solid-icons/tb";
@@ -295,43 +296,60 @@ const SCEdit: Component<Props> = props => {
 				/>
 			</div>
 
-			<div class="my-1">
-				<div
-					class="has-text-centered is-size-6 show-option-toggle cursor-pointer"
-					onClick={() => setShowOptions(s => !s)}>
-					{showOptions() ? "- Hide Options- " : "- Show Options -"}
-				</div>
-				<Show when={showOptions()}>
-					<ColorSelect
-						color={selectedColor()}
-						onChange={c => setSelectedColor(c)}
-					/>
-					<DisplayModeSelect
-						displayMode={selectedDisplayMode()}
-						onChange={dm => setSelectedDisplayMode(dm)}
-					/>
-				</Show>
-			</div>
+			<Show when={showOptions()}>
+				<ColorSelect
+					color={selectedColor()}
+					onChange={c => setSelectedColor(c)}
+				/>
+				<DisplayModeSelect
+					displayMode={selectedDisplayMode()}
+					onChange={dm => setSelectedDisplayMode(dm)}
+				/>
+			</Show>
 
 			<div class="field is-flex is-justify-content-space-between">
-				<div>
+				<div class="is-flex is-gap-1 is-align-items-stretch">
 					<button
 						class="button is-small is-danger"
+						title="Delete this cell"
 						onClick={() => deleteCell(props.cell.uid)}>
 						<span class="icon">
 							<TbOutlineTrash />
 						</span>
-						<span>Delete</span>
+						<span class="is-hidden-mobile">Delete</span>
+					</button>
+					<button
+						class="button is-small is-warning"
+						title="Freeze cell value (convert current value to static data)"
+						onClick={() => freezeCellValue(props.cell.uid)}>
+						<span class="icon">
+							<TbOutlineIceCream2 />
+						</span>
+						<span class="is-hidden-mobile">Freeze</span>
+					</button>
+				</div>
+				<div>
+					<button
+						class={"button is-small" + (showOptions() ? "" : " is-info")}
+						title="Toggle more options"
+						onClick={() => setShowOptions(s => !s)}>
+						<span>Options</span>
 					</button>
 				</div>
 				<div class="is-flex is-gap-1 is-align-items-stretch">
-					<button class="button is-small" onClick={() => props.onEditEnd()}>
+					<button
+						class="button is-small"
+						onClick={() => props.onEditEnd()}
+						title="Cancel editing and discard changes">
 						<span class="icon">
 							<TbOutlineCancel />
 						</span>
-						<span>Cancel</span>
+						<span class="is-hidden-mobile">Cancel</span>
 					</button>
-					<button class="button is-small is-primary" onClick={handleSave}>
+					<button
+						class="button is-small is-primary"
+						onClick={handleSave}
+						title="Save changes">
 						<span class="icon">
 							<TbOutlineCheck />
 						</span>

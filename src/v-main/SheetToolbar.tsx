@@ -1,19 +1,37 @@
 import {
 	TbFillSquare,
-	TbOutlineCheckbox,
+	TbOutlineArrowBackUp,
+	TbOutlineArrowForwardUp,
 	TbOutlineDeviceFloppy,
 	TbOutlineFolder,
 	TbOutlinePlus,
 	TbOutlineProgress,
 	TbOutlineRefresh,
 } from "solid-icons/tb";
-import { Switch, Match, type Component, createSignal } from "solid-js";
+import {
+	Switch,
+	Match,
+	type Component,
+	createSignal,
+	onMount,
+	onCleanup,
+} from "solid-js";
 import { runner } from "./runner";
-import { addEmptyCell, sheetDirty } from "./state";
+import {
+	addEmptyCell,
+	cloneSelectedCells,
+	deleteSelectedCells,
+	sheetDirty,
+} from "./state";
 import { showOpenSheetModal } from "./ModalOpenSheet";
 import { showImportSheetModal } from "./ModalImportSheet";
 import { showExportSheetModal } from "./ModalExportSheet";
-import { actionNewSheet, actionSaveSheet } from "./state-action";
+import {
+	actionEditSelectedCells,
+	actionNewSheet,
+	actionSaveSheet,
+} from "./state-action";
+import { runUndo, runRedo, canUndo, canRedo } from "./history";
 
 const RunningIndicator: Component = () => {
 	const paused = () => runner.paused();
@@ -137,6 +155,64 @@ const SaveButton: Component = () => {
 };
 
 const Toolbar: Component = () => {
+	onMount(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			// Check focus is not on an input, textarea, or contenteditable element
+			const target = e.target as HTMLElement;
+			if (
+				target.tagName === "INPUT" ||
+				target.tagName === "TEXTAREA" ||
+				target.tagName === "SELECT" ||
+				target.isContentEditable
+			) {
+				return;
+			}
+
+			if (e.ctrlKey || e.metaKey) {
+				switch (e.key) {
+					case "z":
+						e.preventDefault();
+						if (e.shiftKey) {
+							runRedo();
+						} else {
+							runUndo();
+						}
+						break;
+					case "y":
+						e.preventDefault();
+						runRedo();
+						break;
+					case "s":
+						e.preventDefault();
+						actionSaveSheet();
+						break;
+					case "d":
+						e.preventDefault();
+						cloneSelectedCells();
+						break;
+					case "o":
+						e.preventDefault();
+						showOpenSheetModal();
+						break;
+				}
+			} else {
+				switch (e.key) {
+					case "Enter":
+						actionEditSelectedCells();
+						break;
+					case "Backspace":
+					case "Delete":
+						deleteSelectedCells();
+						break;
+				}
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		onCleanup(() => {
+			window.removeEventListener("keydown", handleKeyDown);
+		});
+	});
+
 	return (
 		<div class="sheet-toolbar has-shadow m-1 p-2">
 			<RunningIndicator />
@@ -165,9 +241,25 @@ const Toolbar: Component = () => {
 				</span>
 			</button>
 
-			<button class="button is-small" title="Cell Select Mode">
+			<span class="mx-1" />
+
+			<button
+				class={"button is-small " + (!canUndo() ? "is-disabled" : "")}
+				onClick={() => runUndo()}
+				disabled={!canUndo()}
+				title="Undo (Ctrl+Z)">
 				<span class="icon">
-					<TbOutlineCheckbox />
+					<TbOutlineArrowBackUp />
+				</span>
+			</button>
+
+			<button
+				class={"button is-small " + (!canRedo() ? "is-disabled" : "")}
+				onClick={() => runRedo()}
+				disabled={!canRedo()}
+				title="Redo (Ctrl+Y)">
+				<span class="icon">
+					<TbOutlineArrowForwardUp />
 				</span>
 			</button>
 		</div>

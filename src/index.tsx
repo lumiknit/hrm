@@ -19,7 +19,7 @@ putBuiltins(window);
 const Layout: Component<RouteSectionProps> = props => {
 	return (
 		<>
-			<Toaster />
+			<Toaster position="bottom-center" />
 			<ModalStack />
 			<Nav />
 			{props.children}

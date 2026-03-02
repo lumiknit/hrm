@@ -10,6 +10,7 @@ import {
 } from "@codemirror/state";
 import { EditorView, lineNumbers, keymap } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import { autocompletion } from "@codemirror/autocomplete";
 
 import { defaultDark, defaultLight } from "./cm_thm_default";
 
@@ -56,9 +57,13 @@ const CodeEdit: Component<Props> = props => {
 	const Theme = EditorView.theme({
 		"&": {
 			fontSize: "1rem",
+			maxHeight: "30svh",
 		},
 		".cm-content": {
 			fontFamily: "var(--cm-monospace)",
+		},
+		".cm-scroller": {
+			overflow: "auto",
 		},
 	});
 
@@ -67,6 +72,7 @@ const CodeEdit: Component<Props> = props => {
 		const extensions = [
 			lineNumbers(),
 			history(),
+			autocompletion(),
 			keymap.of([...defaultKeymap, ...historyKeymap]),
 			Prec.highest(
 				keymap.of([
@@ -104,6 +110,35 @@ const CodeEdit: Component<Props> = props => {
 			themeCompartment.of(getThemeExt()),
 			langCompartment.of([]),
 			Theme,
+			EditorView.domEventHandlers({
+				drop(event, view) {
+					if (!event.dataTransfer?.files.length) return false;
+
+					event.preventDefault();
+					const file = event.dataTransfer.files[0];
+					const reader = new FileReader();
+
+					reader.onload = e => {
+						const text = e.target?.result;
+						if (typeof text === "string") {
+							const pos = view.posAtCoords({
+								x: event.clientX,
+								y: event.clientY,
+							});
+							if (pos !== null) {
+								view.dispatch({
+									changes: { from: pos, to: pos, insert: text },
+									selection: { anchor: pos + text.length },
+								});
+								view.focus();
+							}
+						}
+					};
+
+					reader.readAsText(file);
+					return true;
+				},
+			}),
 		];
 
 		const state = EditorState.create({
@@ -133,13 +168,7 @@ const CodeEdit: Component<Props> = props => {
 		}
 	});
 
-	return (
-		<div
-			ref={containerRef}
-			{...rest}
-			class={`text-edit-container flex flex-column ${local.class || ""}`}
-		/>
-	);
+	return <div ref={containerRef} {...rest} class={local.class} />;
 };
 
 export default CodeEdit;
