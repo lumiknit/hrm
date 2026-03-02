@@ -14,8 +14,15 @@ import {
 import { uniqueID } from "../core/id";
 import toast from "solid-toast";
 import { renameIdentifiersCode, validJSIdentifier } from "../core/js";
-import { runner } from "./runner";
 import { SheetDB } from "../core/cell-idb";
+import {
+	clearHistory,
+	type HistoryItem,
+	type CellAction,
+	pushAndPerformAction,
+	runUndo,
+} from "./history";
+import { showUndoToast } from "./ToastUndo";
 
 export type Cell = {
 	uid: string;
@@ -72,6 +79,7 @@ export const reset = () => {
 		setSheetDesc("");
 		setCells([]);
 		cellMap.clear();
+		clearHistory();
 	});
 };
 
@@ -165,33 +173,53 @@ export const validCellUpdate = (
 };
 
 export const addEmptyCell = (idx?: number) => {
-	const newCell = thawCell(defaultFrozenCell(findNewCellName()));
-	cellMap.set(newCell.uid, newCell);
-	setCells(prev => {
-		const copy = [...prev];
-		if (idx !== undefined) {
-			copy.splice(idx, 0, newCell.uid);
-		} else {
-			copy.push(newCell.uid);
-		}
-		return copy;
+	const uid = uniqueID();
+	const name = findNewCellName();
+	const action: CellAction = {
+		uid: uid,
+		after: {
+			index: idx !== undefined ? idx : cells().length,
+			data: defaultFrozenCell(name),
+		},
+	};
+	pushAndPerformAction({
+		beforeSelect: new Set(untrack(selectedCells)),
+		afterSelect: new Set([action.uid]),
+		actions: [action],
 	});
-	setSelectedCells(new Set([newCell.uid]));
-	setSheetDirty(true);
-	toast.success("Added cell: " + untrack(() => newCell.getData()).id);
+	showUndoToast("Added cell: " + name, runUndo);
 };
 
 export const reorderCell = (fromIndex: number, toIndex: number) => {
+	// Find UID
 	const currentCells = cells();
-	setCells(oldCells => {
-		const cellID = oldCells[fromIndex];
-		if (!cellID) return oldCells; // Invalid index, return unchanged
-		const newCells = [...currentCells];
-		newCells.splice(fromIndex, 1);
-		newCells.splice(toIndex, 0, cellID);
-		return newCells;
+	const uid = currentCells[fromIndex];
+	if (!uid) {
+		toast.error(`Invalid fromIndex ${fromIndex} for reordering.`);
+		return;
+	}
+	const data = cellMap.get(uid)?.getData();
+	if (!data) {
+		toast.error(`Cell with UID ${uid} not found for reordering.`);
+		return;
+	}
+
+	const action: CellAction = {
+		uid,
+		before: {
+			index: fromIndex,
+			data: data,
+		},
+		after: {
+			index: toIndex,
+			data: data,
+		},
+	};
+	pushAndPerformAction({
+		beforeSelect: new Set(untrack(selectedCells)),
+		afterSelect: new Set(untrack(selectedCells)),
+		actions: [action],
 	});
-	setSheetDirty(true);
 };
 
 export const updateCell = (uid: string, newData: FrozenCell) => {
@@ -210,11 +238,23 @@ export const updateCell = (uid: string, newData: FrozenCell) => {
 		return;
 	}
 
-	cell.setData(newData);
-	setSheetDirty(true);
-	toast.success("Updated cell: " + newData.id);
-
-	runner.recompile();
+	const action: CellAction = {
+		uid,
+		before: {
+			index: -1,
+			data: oldData,
+		},
+		after: {
+			index: -1,
+			data: newData,
+		},
+	};
+	pushAndPerformAction({
+		beforeSelect: new Set(untrack(selectedCells)),
+		afterSelect: new Set(untrack(selectedCells)),
+		actions: [action],
+	});
+	showUndoToast("Updated cell: " + newData.id, runUndo);
 };
 
 export const deleteCell = (uid: string) => {
@@ -223,22 +263,26 @@ export const deleteCell = (uid: string) => {
 		toast.error(`Cell with UID ${uid} not found.`);
 		return;
 	}
-	if (
-		!confirm(
-			"Are you sure you want to delete cell " +
-				untrack(() => cell.getData()).id +
-				"?",
-		)
-	) {
-		return;
-	}
 
-	cellMap.delete(uid);
-	setCells(prev => prev.filter(id => id !== uid));
-	setSheetDirty(true);
-	toast.success("Deleted cell: " + untrack(() => cell.getData()).id);
+	const oldData = cell.getData();
+	const action = {
+		uid,
+		before: {
+			index: cells().indexOf(uid),
+			data: oldData,
+		},
+	};
 
-	runner.recompile();
+	const oldSel = untrack(selectedCells);
+	const newSel = new Set(oldSel);
+	newSel.delete(uid);
+
+	pushAndPerformAction({
+		beforeSelect: new Set(oldSel),
+		afterSelect: newSel,
+		actions: [action],
+	});
+	showUndoToast("Deleted cell: " + oldData.id, runUndo);
 };
 
 export const checkSheetDirty = (): boolean => {
@@ -252,7 +296,6 @@ export const cloneSelectedCells = () => {
 		return;
 	}
 
-	const newCells: Cell[] = [];
 	const nameMap = new Map<string, string>();
 	const existingNames = new Set<string>();
 	for (const c of cellMap.values()) {
@@ -278,6 +321,9 @@ export const cloneSelectedCells = () => {
 		}
 	}
 
+	const historyEvents: CellAction[] = [];
+	let startIdx = cells().length;
+
 	// Second pass: clone cells and rewrite code if needed
 	for (const data of originalCells) {
 		const newName = nameMap.get(data.id)!;
@@ -295,23 +341,25 @@ export const cloneSelectedCells = () => {
 			}
 		}
 
-		const newCell = thawCell(baseClone);
-		cellMap.set(newCell.uid, newCell);
-		newCells.push(newCell);
+		historyEvents.push({
+			uid: uniqueID(),
+			after: {
+				index: startIdx++,
+				data: baseClone,
+			},
+		});
 	}
 
-	setCells(prev => {
-		const copy = [...prev];
-		for (const nc of newCells) {
-			copy.push(nc.uid);
-		}
-		return copy;
-	});
+	if (historyEvents.length > 0) {
+		const newSel = new Set(historyEvents.map(c => c.uid));
+		pushAndPerformAction({
+			beforeSelect: new Set(untrack(selectedCells)),
+			afterSelect: newSel,
+			actions: historyEvents,
+		});
+	}
 
-	setSelectedCells(new Set(newCells.map(c => c.uid)));
-	setSheetDirty(true);
-	toast.success(`Cloned ${newCells.length} cell(s).`);
-	runner.recompile();
+	showUndoToast(`Cloned ${historyEvents.length} cell(s).`, runUndo);
 };
 
 export const deleteSelectedCells = () => {
@@ -321,19 +369,31 @@ export const deleteSelectedCells = () => {
 		return;
 	}
 
-	if (!confirm(`Are you sure you want to delete ${selected.size} cell(s)?`)) {
-		return;
+	const historyEvents: CellAction[] = [];
+	const currentCells = cells();
+	for (let i = 0; i < currentCells.length; i++) {
+		const uid = currentCells[i];
+		if (selected.has(uid)) {
+			historyEvents.push({
+				uid,
+				before: {
+					index: i,
+					data: structuredClone(untrack(() => cellMap.get(uid)?.getData()!)),
+				},
+			});
+		}
 	}
 
-	batch(() => {
-		setCells(prev => prev.filter(id => !selected.has(id)));
-		for (const uid of selected) {
-			cellMap.delete(uid);
-		}
-		setSelectedCells(new Set<string>());
-	});
+	// Sort by index descending to avoid messing up indices when deleting multiple cells
+	historyEvents.sort((a, b) => b.before!.index - a.before!.index);
 
-	setSheetDirty(true);
-	toast.success(`Deleted ${selected.size} cell(s).`);
-	runner.recompile();
+	if (historyEvents.length > 0) {
+		pushAndPerformAction({
+			beforeSelect: new Set(untrack(selectedCells)),
+			afterSelect: new Set(),
+			actions: historyEvents,
+		});
+	}
+
+	showUndoToast(`Deleted ${selected.size} cell(s).`, runUndo);
 };

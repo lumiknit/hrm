@@ -65,3 +65,44 @@ $success-green: rgb(72, 199, 120);
 	right: 0.25rem;
 	z-index: 3;
 }
+
+div.toast-undo {
+	color: rgb(var(--bulma-body-color)) !important;
+	background: hsl(
+		var(--bulma-scheme-h),
+		var(--bulma-scheme-s),
+		var(--cell-bg-l)
+	) !important;
+	border-radius: 0.25rem;
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.5rem 1rem;
+}
+
+.animate-enter {
+	animation: fadeIn 0.15s ease-out;
+}
+
+.animate-leave {
+	animation: fadeOut 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+	from {
+		transform: translateY(100%) scale(0.5);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeOut {
+	from {
+		transform: translateY(0);
+	}
+	to {
+		transform: translateY(100%) scale(0.5);
+	}
+}

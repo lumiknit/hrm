@@ -1,19 +1,28 @@
 import {
 	TbFillSquare,
-	TbOutlineCheckbox,
+	TbOutlineArrowBackUp,
+	TbOutlineArrowForwardUp,
 	TbOutlineDeviceFloppy,
 	TbOutlineFolder,
 	TbOutlinePlus,
 	TbOutlineProgress,
 	TbOutlineRefresh,
 } from "solid-icons/tb";
-import { Switch, Match, type Component, createSignal } from "solid-js";
+import {
+	Switch,
+	Match,
+	type Component,
+	createSignal,
+	onMount,
+	onCleanup,
+} from "solid-js";
 import { runner } from "./runner";
 import { addEmptyCell, sheetDirty } from "./state";
 import { showOpenSheetModal } from "./ModalOpenSheet";
 import { showImportSheetModal } from "./ModalImportSheet";
 import { showExportSheetModal } from "./ModalExportSheet";
 import { actionNewSheet, actionSaveSheet } from "./state-action";
+import { runUndo, runRedo, canUndo, canRedo } from "./history";
 
 const RunningIndicator: Component = () => {
 	const paused = () => runner.paused();
@@ -137,6 +146,24 @@ const SaveButton: Component = () => {
 };
 
 const Toolbar: Component = () => {
+	onMount(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.ctrlKey || e.metaKey) {
+				if (e.key === "z") {
+					e.preventDefault();
+					runUndo();
+				} else if (e.key === "y" || (e.key === "Z" && e.shiftKey)) {
+					e.preventDefault();
+					runRedo();
+				}
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		onCleanup(() => {
+			window.removeEventListener("keydown", handleKeyDown);
+		});
+	});
+
 	return (
 		<div class="sheet-toolbar has-shadow m-1 p-2">
 			<RunningIndicator />
@@ -162,6 +189,28 @@ const Toolbar: Component = () => {
 				title="Add Empty Cell">
 				<span class="icon">
 					<TbOutlinePlus />
+				</span>
+			</button>
+
+			<span class="mx-1" />
+
+			<button
+				class={"button is-small " + (!canUndo() ? "is-disabled" : "")}
+				onClick={() => runUndo()}
+				disabled={!canUndo()}
+				title="Undo (Ctrl+Z)">
+				<span class="icon">
+					<TbOutlineArrowBackUp />
+				</span>
+			</button>
+
+			<button
+				class={"button is-small " + (!canRedo() ? "is-disabled" : "")}
+				onClick={() => runRedo()}
+				disabled={!canRedo()}
+				title="Redo (Ctrl+Y)">
+				<span class="icon">
+					<TbOutlineArrowForwardUp />
 				</span>
 			</button>
 		</div>
