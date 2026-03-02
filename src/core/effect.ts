@@ -80,23 +80,6 @@ export class EffectController {
 	}
 
 	/**
-	 * Run single pending effect.
-	 */
-	public async runOne(): Promise<boolean> {
-		const effect = this.pendingEffects.values().next().value;
-		if (effect) {
-			this.pendingEffects.delete(effect);
-			try {
-				await effect.execute();
-			} catch (e) {
-				console.error("Error in effect:", e);
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * Asynchronously run pending effects.
 	 */
 	public async run(limit?: number): Promise<number> {
@@ -104,17 +87,38 @@ export class EffectController {
 			limit = Infinity;
 		}
 		let counter = 0;
+		let microCnt = 0;
 		let now = performance.now();
 
 		let micro = 0;
 		let macro = 0;
 
 		while (counter < limit) {
-			if (!(await this.runOne())) {
+			const batch = Math.min(limit - counter, this.runMicroBatchSize);
+
+			// Pop batches at once
+			const effectsToRun = this.pendingEffects.values();
+			const batchEffects = [];
+			for (const effect of effectsToRun) {
+				batchEffects.push(effect);
+				if (batchEffects.length >= batch) {
+					break;
+				}
+			}
+			if (batchEffects.length === 0) {
 				break;
 			}
-			counter++;
-			if (counter % this.runMicroBatchSize === 0) {
+			for (const effect of batchEffects) {
+				this.pendingEffects.delete(effect);
+			}
+
+			// Run batch
+			await Promise.allSettled(batchEffects.map(effect => effect.execute()));
+			counter += batchEffects.length;
+			microCnt += batchEffects.length;
+
+			if (microCnt >= this.runMicroBatchSize) {
+				microCnt = 0;
 				let elapsed = performance.now() - now;
 				if (elapsed >= this.macroBatchDuration) {
 					await new Promise<void>(resolve => setTimeout(resolve, 0));

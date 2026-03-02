@@ -140,7 +140,7 @@ const SortableCellHolder: Component<SortableCellProps> = props => {
 				</div>
 			</div>
 			<Show when={!cellDragging() && isSelected()}>
-				<div class="sc-cell-overlay is-flex is-justify-content-center is-gap-1">
+				<div class="sc-cell-overlay is-flex is-justify-content-center is-gap-1 p-2">
 					<button
 						class="button is-small is-rounded"
 						onClick={() => {

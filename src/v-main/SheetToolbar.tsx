@@ -164,12 +164,6 @@ const Toolbar: Component = () => {
 					<TbOutlinePlus />
 				</span>
 			</button>
-
-			<button class="button is-small" title="Cell Select Mode">
-				<span class="icon">
-					<TbOutlineCheckbox />
-				</span>
-			</button>
 		</div>
 	);
 };

@@ -295,23 +295,16 @@ const SCEdit: Component<Props> = props => {
 				/>
 			</div>
 
-			<div class="my-1">
-				<div
-					class="has-text-centered is-size-6 show-option-toggle cursor-pointer"
-					onClick={() => setShowOptions(s => !s)}>
-					{showOptions() ? "- Hide Options- " : "- Show Options -"}
-				</div>
-				<Show when={showOptions()}>
-					<ColorSelect
-						color={selectedColor()}
-						onChange={c => setSelectedColor(c)}
-					/>
-					<DisplayModeSelect
-						displayMode={selectedDisplayMode()}
-						onChange={dm => setSelectedDisplayMode(dm)}
-					/>
-				</Show>
-			</div>
+			<Show when={showOptions()}>
+				<ColorSelect
+					color={selectedColor()}
+					onChange={c => setSelectedColor(c)}
+				/>
+				<DisplayModeSelect
+					displayMode={selectedDisplayMode()}
+					onChange={dm => setSelectedDisplayMode(dm)}
+				/>
+			</Show>
 
 			<div class="field is-flex is-justify-content-space-between">
 				<div>
@@ -322,6 +315,13 @@ const SCEdit: Component<Props> = props => {
 							<TbOutlineTrash />
 						</span>
 						<span>Delete</span>
+					</button>
+				</div>
+				<div>
+					<button
+						class="button is-small"
+						onClick={() => setShowOptions(s => !s)}>
+						{showOptions() ? "Hide Options" : "Show Options"}
 					</button>
 				</div>
 				<div class="is-flex is-gap-1 is-align-items-stretch">
