@@ -290,6 +290,31 @@ export const deleteCell = (uid: string) => {
 	showUndoToast("Deleted cell: " + oldData.id, runUndo);
 };
 
+// Convert current cell data into JSON
+export const freezeCellValue = (uid: string) => {
+	const cell = cellMap.get(uid);
+	if (!cell) {
+		throw new Error(`Cell with UID ${uid} not found for freezing.`);
+	}
+	const value = cell.value();
+	const j = JSON.stringify(value, null, 2);
+
+	const newData: FrozenCell = {
+		...cell.getData(),
+		formula: j,
+		meta: {
+			...cell.getData().meta,
+			type: {
+				type: "data",
+				lang: "yaml",
+			},
+			displayMode: "input",
+		},
+	};
+	updateCell(uid, newData);
+	cell.setEditing(false);
+};
+
 export const checkSheetDirty = (): boolean => {
 	return untrack(sheetDirty);
 };

@@ -59,6 +59,7 @@ export const putBuiltins = (target: Record<string, any>) => {
 		}
 		return target.sum(...arr) / arr.length;
 	};
+	target.avg = target.average;
 
 	target.randomInt = (min: number, max: number): number => {
 		return Math.floor(Math.random() * (max - min + 1)) + min;
