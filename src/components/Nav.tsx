@@ -29,7 +29,7 @@ const Nav: Component = () => {
 				class={`navbar-menu ${active() ? "is-active" : ""}`}>
 				<div class="navbar-start">
 					<a class="navbar-item">Home</a>
-					<a class="navbar-item">Doc</a>
+					<a class="navbar-item" href="#/quick-template">Quick</a>
 				</div>
 
 				<div class="navbar-end">

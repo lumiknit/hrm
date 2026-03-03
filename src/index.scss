@@ -1,15 +1,15 @@
+@use "sass:string";
+
 $primary-blue: rgb(0, 154, 250);
 $info-violet: rgb(179, 102, 255);
 $success-green: rgb(72, 199, 120);
 
 // Path to Bulma's sass folder
-@use "bulma/sass" with (
-	$family-primary: '"Pretendard JP", "Pretendard", sans-serif',
-	$family-monospace: "monospace",
+@use "bulma/sass" with ($family-primary: string.unquote('"Pretendard JP", "Pretendard", sans-serif'),
+	$family-monospace: string.unquote('monospace'),
 	$primary: $primary-blue,
 	$info: $info-violet,
-	$success: $success-green
-);
+	$success: $success-green);
 
 :root {
 	--bulma-code-size: 1em;
@@ -17,11 +17,9 @@ $success-green: rgb(72, 199, 120);
 
 	--cell-bg-l: 96%;
 	--value-bg-l: 94%;
-	--sc-cell-bg: hsl(
-		var(--bulma-scheme-h),
-		var(--bulma-scheme-s),
-		var(--cell-bg-l)
-	);
+	--sc-cell-bg: hsl(var(--bulma-scheme-h),
+			var(--bulma-scheme-s),
+			var(--cell-bg-l));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,7 +44,7 @@ $success-green: rgb(72, 199, 120);
 	overflow-wrap: break-word;
 
 	/* Fix Icons */
-	& > div > svg {
+	&>div>svg {
 		width: 1.25em;
 		height: 1.25em;
 	}
@@ -68,11 +66,9 @@ $success-green: rgb(72, 199, 120);
 
 div.toast-undo {
 	color: rgb(var(--bulma-body-color)) !important;
-	background: hsl(
-		var(--bulma-scheme-h),
-		var(--bulma-scheme-s),
-		var(--cell-bg-l)
-	) !important;
+	background: hsl(var(--bulma-scheme-h),
+			var(--bulma-scheme-s),
+			var(--cell-bg-l)) !important;
 	border-radius: 0.25rem;
 	position: relative;
 	display: flex;
@@ -93,6 +89,7 @@ div.toast-undo {
 	from {
 		transform: translateY(100%) scale(0.5);
 	}
+
 	to {
 		transform: translateY(0);
 	}
@@ -102,6 +99,7 @@ div.toast-undo {
 	from {
 		transform: translateY(0);
 	}
+
 	to {
 		transform: translateY(100%) scale(0.5);
 	}

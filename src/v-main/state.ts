@@ -126,17 +126,14 @@ export const saveCurrentSheet = async () => {
 	setSheetDirty(false);
 };
 
+import { uniqueVar } from "../core/varname";
+
 const findNewCellName = () => {
-	const nameSet = new Set();
+	const nameSet = new Set<string>();
 	for (const c of cellMap.values()) {
 		nameSet.add(untrack(() => c.getData()).id);
 	}
-	for (let i = 1; ; i++) {
-		const name = `c${i}`;
-		if (!nameSet.has(name)) {
-			return name;
-		}
-	}
+	return uniqueVar(nameSet);
 };
 
 /**
@@ -192,6 +189,8 @@ export const addEmptyCell = (idx?: number) => {
 		afterSelect: new Set([action.uid]),
 		actions: [action],
 	});
+	// Set editing mode
+	cellMap.get(uid)?.setEditing(true);
 	showUndoToast("Added cell: " + name, runUndo);
 };
 

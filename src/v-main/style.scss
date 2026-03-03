@@ -45,7 +45,7 @@
 .sc-v-hd {
 	position: relative;
 
-	& > span.icon {
+	&>span.icon {
 		position: absolute;
 		top: 0;
 		right: 0;
@@ -75,6 +75,17 @@
 
 .sc-code {
 	border-radius: 0.25rem;
+	border: 1px solid hsl(var(--bulma-scheme-h),
+			var(--bulma-scheme-s),
+			var(--bulma-border-l));
+
+	&>.cm-editor {
+		border-radius: 0.25rem;
+	}
+
+	&>.cm-focused {
+		outline: 2px solid hsl(217, 71%, 53%);
+	}
 }
 
 .value-display {
@@ -86,11 +97,9 @@
 
 	font-family: var(--cm-monospace);
 	font-size: 1rem;
-	background-color: hsl(
-		var(--bulma-scheme-h),
-		var(--bulma-scheme-s),
-		var(--value-bg-l)
-	);
+	background-color: hsl(var(--bulma-scheme-h),
+			var(--bulma-scheme-s),
+			var(--value-bg-l));
 	border-radius: 0.25rem;
 
 	padding: 0.25rem;

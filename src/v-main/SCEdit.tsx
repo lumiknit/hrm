@@ -1,4 +1,4 @@
-import { createSignal, For, Show, type Component } from "solid-js";
+import { createSignal, For, onMount, Show, type Component } from "solid-js";
 import { deleteCell, freezeCellValue, updateCell, type Cell } from "./state";
 import { compileCellCode } from "./runner";
 import {
@@ -258,8 +258,18 @@ const SCEdit: Component<Props> = props => {
 		props.onEditEnd();
 	};
 
+	onMount(() => {
+		idRef.focus();
+		idRef.setSelectionRange(0, idRef.value.length);
+	});
+
 	return (
 		<>
+			<CellTypeSelect
+				type={selectedType()}
+				onChange={t => setSelectedType(t)}
+			/>
+
 			<div class="control has-icons-left mb-2">
 				<input
 					ref={idRef}
@@ -271,10 +281,6 @@ const SCEdit: Component<Props> = props => {
 					<TbOutlineKey />
 				</span>
 			</div>
-			<CellTypeSelect
-				type={selectedType()}
-				onChange={t => setSelectedType(t)}
-			/>
 
 			<Show when={compileError()}>
 				<div class="notification is-danger my-2">

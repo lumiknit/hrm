@@ -288,7 +288,7 @@ const SCView: Component<Props> = props => {
 	return (
 		<>
 			<div class="sc-v-hd is-flex is-align-items-center is-justify-content-space-between py-1">
-				<b>{data().id}</b>=
+				<b>{data().id}</b>&nbsp;=&nbsp;
 				<div
 					class="sc-v-formula is-font-monospaced"
 					onClick={() => props.onEditStart()}>

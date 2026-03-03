@@ -23,8 +23,11 @@ export interface Props extends Omit<
 	language?: string;
 	initText?: string;
 	disabled?: boolean;
+	maxHeight?: string;
 
 	codeGetBox: [(() => string)?];
+	codeAppendBox?: [((text: string) => void)?];
+	codeSetText?: [((text: string) => void)?];
 	onKeyModEnter?: () => void; // Enter with modifier
 }
 
@@ -33,8 +36,11 @@ const CodeEdit: Component<Props> = props => {
 		"language",
 		"initText",
 		"disabled",
+		"maxHeight",
 		"class",
 		"codeGetBox",
+		"codeAppendBox",
+		"codeSetText",
 	]);
 	let containerRef!: HTMLDivElement;
 	let editorView: EditorView | null = null;
@@ -57,7 +63,7 @@ const CodeEdit: Component<Props> = props => {
 	const Theme = EditorView.theme({
 		"&": {
 			fontSize: "1rem",
-			maxHeight: "30svh",
+			maxHeight: local.maxHeight || "30svh",
 		},
 		".cm-content": {
 			fontFamily: "var(--cm-monospace)",
@@ -71,6 +77,7 @@ const CodeEdit: Component<Props> = props => {
 		// Basic setup extensions needed for a standard editor feel
 		const extensions = [
 			lineNumbers(),
+			EditorView.lineWrapping,
 			history(),
 			autocompletion(),
 			keymap.of([...defaultKeymap, ...historyKeymap]),
@@ -152,6 +159,31 @@ const CodeEdit: Component<Props> = props => {
 		});
 
 		props.codeGetBox[0] = () => editorView?.state.doc.toString() || "";
+		if (props.codeAppendBox) {
+			props.codeAppendBox[0] = (text: string) => {
+				if (editorView) {
+					const docLength = editorView.state.doc.length;
+					editorView.dispatch({
+						changes: { from: docLength, insert: text },
+						selection: { anchor: docLength + text.length },
+						effects: EditorView.scrollIntoView(docLength + text.length)
+					});
+					editorView.focus();
+				}
+			};
+		}
+		if (props.codeSetText) {
+			props.codeSetText[0] = (text: string) => {
+				if (editorView) {
+					editorView.dispatch({
+						changes: { from: 0, to: editorView.state.doc.length, insert: text },
+						selection: { anchor: text.length },
+						effects: EditorView.scrollIntoView(text.length)
+					});
+					editorView.focus();
+				}
+			};
+		}
 	});
 
 	// Reactively update language if it changes

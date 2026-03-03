@@ -85,7 +85,6 @@ const FileDropdown: Component = () => {
 			<div class="dropdown-menu" id="dropdown-menu" role="menu">
 				<div class="dropdown-content">
 					<a
-						href="#"
 						class="dropdown-item"
 						onClick={() => {
 							setActive(false);
@@ -94,7 +93,6 @@ const FileDropdown: Component = () => {
 						New Sheet
 					</a>
 					<a
-						href="#"
 						class="dropdown-item"
 						onClick={() => {
 							setActive(false);
@@ -104,7 +102,6 @@ const FileDropdown: Component = () => {
 					</a>
 					<hr class="dropdown-divider" />
 					<a
-						href="#"
 						class="dropdown-item"
 						onClick={() => {
 							setActive(false);
@@ -114,7 +111,6 @@ const FileDropdown: Component = () => {
 					</a>
 					<hr class="dropdown-divider" />
 					<a
-						href="#"
 						class="dropdown-item"
 						onClick={() => {
 							setActive(false);
@@ -123,7 +119,6 @@ const FileDropdown: Component = () => {
 						Import Sheet
 					</a>
 					<a
-						href="#"
 						class="dropdown-item"
 						onClick={() => {
 							setActive(false);

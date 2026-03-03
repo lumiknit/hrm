@@ -39,6 +39,7 @@
 		"@solidjs/router": "^0.15.4",
 		"@thisbeyond/solid-dnd": "^0.7.5",
 		"@types/crypto-js": "^4.2.2",
+		"@types/turndown": "^5.0.6",
 		"acorn": "^8.16.0",
 		"acorn-walk": "^8.3.5",
 		"astring": "^1.9.0",
@@ -53,6 +54,7 @@
 		"solid-js": "^1.9.11",
 		"solid-toast": "^0.5.0",
 		"thememirror": "^2.0.1",
+		"turndown": "^7.2.2",
 		"uuid": "^13.0.0",
 		"yaml": "^2.8.2",
 		"zod": "^4.3.6"
